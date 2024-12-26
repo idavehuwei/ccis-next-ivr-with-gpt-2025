@@ -126,3 +126,15 @@ export interface IVRNode {
     [key: string]: any;
   };
 }
+
+export interface IVRNodeData {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url?: string;
+  contentType?: 'application/x-www-form-urlencoded' | 'application/json';
+  body?: string;
+  authenticateWithTwilio?: boolean;
+  parameters?: Array<{
+    key: string;
+    value: string;
+  }>;
+}

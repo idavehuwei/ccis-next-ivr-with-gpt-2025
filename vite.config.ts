@@ -21,4 +21,12 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  optimizeDeps: {
+    include: [
+      '@vue-flow/core',
+      '@vue-flow/background',
+      '@vue-flow/controls',
+      '@vue-flow/minimap'
+    ]
+  }
 })

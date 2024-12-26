@@ -279,9 +279,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
+
+// Vue Flow 核心
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
-
 import { 
   VueFlow, 
   useVueFlow, 
@@ -293,8 +294,13 @@ import {
   EdgeMouseEvent,
   getIncomers,
   getOutgoers,
-  getConnectedEdges 
+  getConnectedEdges
 } from '@vue-flow/core'
+
+// Vue Flow 插件组件
+import { Background } from '@vue-flow/background'
+import { Controls } from '@vue-flow/controls'
+import { MiniMap } from '@vue-flow/minimap'
 
 // Components
 import FloatingToolbar from '@/components/FloatingToolbar.vue'

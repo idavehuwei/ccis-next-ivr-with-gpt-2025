@@ -1,3 +1,5 @@
+import HttpRequestNode from '@/components/nodes/HttpRequestNode.vue';
+
 export const NODE_TYPES = {
   TRIGGER: {
     type: 'trigger',
@@ -62,12 +64,13 @@ export const NODE_TYPES = {
   },
   HTTP_REQUEST: {
     type: 'http_request',
-    name: 'Make HTTP Request',
+    name: 'HTTP请求',
     category: 'Integration',
-    description: 'Call an external API',
+    description: '发送HTTP请求并处理响应',
     outputs: ['success', 'failed'],
     maxOutputs: 2,
-    color: 'yellow'
+    color: 'yellow',
+    component: HttpRequestNode
   },
 
   SET_VARIABLES: {
@@ -77,7 +80,9 @@ export const NODE_TYPES = {
       label: 'set_variables_1',
       variables: {}
     }
-  }
+  },
+
+  http_request: HttpRequestNode,
 
 } as const;
 
@@ -115,3 +120,19 @@ export interface IVREdge {
     priority?: number;
   };
 }
+
+export const widgetLibrary = [
+  {
+    category: 'API请求',
+    items: [
+      {
+        type: 'http_request',
+        name: 'HTTP请求',
+        description: '发送HTTP请求并处理响应',
+        icon: 'H',
+        iconClass: 'bg-yellow-500'
+      }
+    ]
+  },
+  // ... 其他类别
+];
