@@ -105,3 +105,24 @@ export interface IVRFlow {
   createdAt: string;
   updatedAt: string;
 }
+
+
+export interface Variable {
+  key: string
+  value: string
+}
+
+export interface IVRNode {
+  id: string;
+  type: 'trigger' | 'gather_input' | 'split' | 'connect_call' | 'set_variables';
+  name: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  data: {
+    label?: string;
+    variables?: Variable[];
+    [key: string]: any;
+  };
+}

@@ -68,7 +68,17 @@ export const NODE_TYPES = {
     outputs: ['success', 'failed'],
     maxOutputs: 2,
     color: 'yellow'
+  },
+
+  SET_VARIABLES: {
+    type: 'set_variables',
+    name: 'Set Variables',
+    defaultData: {
+      label: 'set_variables_1',
+      variables: {}
+    }
   }
+
 } as const;
 
 export type NodeType = keyof typeof NODE_TYPES;

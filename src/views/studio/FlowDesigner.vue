@@ -123,8 +123,8 @@
             />
           </template>
 
-          <template #node-variables="props">
-            <VariablesWidget
+          <template #node-set_variables="props">
+            <SetVariablesNode
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
             />
@@ -164,6 +164,14 @@
               :is-selected="selectedNode?.id === props.id"
             />
           </template>
+
+          <template #node-call_recording="props">
+            <CallRecordingNode
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
 
           <!-- 连接线模板 -->
           <template #edge-default="{ id, sourceX, sourceY, targetX, targetY }">
@@ -298,8 +306,9 @@ import OutgoingCallNode from '@/components/nodes/OutgoingCallNode.vue'
 import SplitNode from '@/components/nodes/SplitNode.vue'
 
 import SayPlayNode from '@/components/nodes/SayPlayNode.vue'
+import CallRecordingNode from '@/components/nodes/CallRecordingNode.vue'
 
-import VariablesWidget from '@/components/nodes/VariablesWidget.vue'
+import SetVariablesNode from '@/components/nodes/SetVariablesNode.vue'
 
 
 import ConfigPanel from '@/components/panels/ConfigPanel.vue'

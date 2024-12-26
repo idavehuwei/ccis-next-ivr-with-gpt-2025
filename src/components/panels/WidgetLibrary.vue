@@ -4,7 +4,7 @@
     <!-- Panel Header -->
     <div class="p-4 border-b">
       <div class="flex items-center justify-between">
-        <h2 class="font-medium text-gray-900">添加组件</h2>
+        <h2 class="font-medium text-gray-900">Add Widget</h2>
         <button 
           @click="$emit('hide')" 
           class="text-blue-600 hover:text-blue-700 text-sm"
@@ -14,10 +14,30 @@
       </div>
     </div>
 
-    <!-- Component List -->
-    <div class="flex-1 overflow-y-auto">
+    <!-- Search Bar -->
+    <div class="px-4 py-3 border-b">
+      <div class="relative">
+        <input
+          v-model="searchQuery"
+          type="search"
+          placeholder="Search widgets..."
+          class="w-full px-3 py-2 pl-9 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          @input="filterComponents"
+        />
+        <svg 
+          class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" 
+          viewBox="0 0 20 20" 
+          fill="currentColor"
+        >
+          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Component List with Scroll -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar">
       <!-- Flow Control Section -->
-      <div class="p-4 border-b">
+      <div v-if="filteredFlowControlComponents.length > 0" class="p-4 border-b">
         <div class="flex items-center mb-3">
           <svg class="w-4 h-4 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2"/>
@@ -26,7 +46,7 @@
         </div>
         <div class="space-y-2">
           <button
-            v-for="component in flowControlComponents"
+            v-for="component in filteredFlowControlComponents"
             :key="component.type"
             class="w-full flex items-center p-3 border rounded-lg hover:bg-gray-50 transition-all hover:translate-y-[-1px]"
             @click="addNode(component.type)"
@@ -40,8 +60,8 @@
         </div>
       </div>
 
-      <!-- Voice Section -->
-      <div class="p-4 border-b">
+      <!-- Voice Widgets -->
+      <div v-if="filteredVoiceComponents.length > 0" class="p-4 border-b">
         <div class="flex items-center mb-3">
           <svg class="w-4 h-4 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" stroke-width="2"/>
@@ -50,7 +70,7 @@
         </div>
         <div class="space-y-2">
           <button
-            v-for="component in voiceComponents"
+            v-for="component in filteredVoiceComponents"
             :key="component.type"
             class="w-full flex items-center p-3 border rounded-lg hover:bg-gray-50 transition-all hover:translate-y-[-1px]"
             @click="addNode(component.type)"
@@ -64,8 +84,8 @@
         </div>
       </div>
 
-      <!-- Messaging Section -->
-      <div class="p-4">
+      <!-- Messaging Widgets -->
+      <div v-if="filteredMessagingComponents.length > 0" class="p-4 border-b">
         <div class="flex items-center mb-3">
           <svg class="w-4 h-4 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-width="2"/>
@@ -74,7 +94,7 @@
         </div>
         <div class="space-y-2">
           <button
-            v-for="component in messagingComponents"
+            v-for="component in filteredMessagingComponents"
             :key="component.type"
             class="w-full flex items-center p-3 border rounded-lg hover:bg-gray-50 transition-all hover:translate-y-[-1px]"
             @click="addNode(component.type)"
@@ -87,11 +107,41 @@
           </button>
         </div>
       </div>
+
+      <!-- API Requests -->
+      <div v-if="filteredApiComponents.length > 0" class="p-4 border-b">
+        <div class="flex items-center mb-3">
+          <svg class="w-4 h-4 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-sm font-medium text-gray-700">API REQUESTS</span>
+        </div>
+        <div class="space-y-2">
+          <button
+            v-for="component in filteredApiComponents"
+            :key="component.type"
+            class="w-full flex items-center p-3 border rounded-lg hover:bg-gray-50 transition-all hover:translate-y-[-1px]"
+            @click="addNode(component.type)"
+          >
+            <div class="w-8 h-8 rounded flex items-center justify-center mr-3 text-white font-bold"
+                 :class="component.iconClass">
+              {{ component.icon }}
+            </div>
+            <span class="text-gray-700">{{ component.name }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- No Results Message -->
+      <div v-if="showNoResults" class="p-8 text-center text-gray-500">
+        No widgets found matching "{{ searchQuery }}"
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -101,6 +151,9 @@ const emit = defineEmits<{
 
 const { addNodes } = useVueFlow()
 
+const searchQuery = ref('')
+
+// Flow Control Components
 const flowControlComponents = [
   {
     type: 'split',
@@ -109,39 +162,27 @@ const flowControlComponents = [
     iconClass: 'bg-blue-500'
   },
   {
-    type: 'variables',
+    type: 'set_variables',
     name: 'Set Variables',
     icon: 'V',
     iconClass: 'bg-blue-500'
   },
   {
-    type: 'subflow',
-    name: 'Run Subflow',
-    icon: 'R',
-    iconClass: 'bg-blue-500'
-  },
-  {
-    type: 'fork_stream',
-    name: 'Fork Stream',
+    type: 'run_function',
+    name: 'Run Function',
     icon: 'F',
     iconClass: 'bg-blue-500'
   },
   {
-    type: 'connect_virtual_agent',
-    name: 'Connect Virtual Agent',
-    icon: 'A',
+    type: 'run_subflow',
+    name: 'Run Subflow',
+    icon: 'S',
     iconClass: 'bg-blue-500'
   }
 ]
 
-
+// Voice Components
 const voiceComponents = [
-  {
-    type: 'gather_input',
-    name: 'Gather Input on Call',
-    icon: 'G',
-    iconClass: 'bg-green-500'
-  },
   {
     type: 'connect_call',
     name: 'Connect Call To',
@@ -149,27 +190,33 @@ const voiceComponents = [
     iconClass: 'bg-green-500'
   },
   {
-    type: 'record',
-    name: 'Record Voicemail',
+    type: 'say_play',
+    name: 'Say/Play',
+    icon: 'S',
+    iconClass: 'bg-green-500'
+  },
+  {
+    type: 'gather_input',
+    name: 'Gather Input on Call',
+    icon: 'G',
+    iconClass: 'bg-green-500'
+  },
+  {
+    type: 'record_call',
+    name: 'Record Call',
     icon: 'R',
     iconClass: 'bg-green-500'
   },
   {
-    type: 'say_play',
-    name: 'Say/Play',
-    icon: 'P',
+    type: 'record_voicemail',
+    name: 'Record Voicemail',
+    icon: 'V',
     iconClass: 'bg-green-500'
   },
   {
-    type: 'make_call',
+    type: 'make_outgoing_call',
     name: 'Make Outgoing Call',
     icon: 'O',
-    iconClass: 'bg-green-500'
-  },
-  {
-    type: 'call_recording',
-    name: 'Call Recording',
-    icon: 'C',
     iconClass: 'bg-green-500'
   },
   {
@@ -177,63 +224,176 @@ const voiceComponents = [
     name: 'Enqueue Call',
     icon: 'E',
     iconClass: 'bg-green-500'
+  },
+  {
+    type: 'add_twiml',
+    name: 'Add TwiML',
+    icon: 'T',
+    iconClass: 'bg-green-500'
   }
 ]
 
-
+// Messaging Components
 const messagingComponents = [
   {
-    type: 'trigger',
-    name: '触发器',
-    icon: 'T',
-    iconClass: 'bg-red-500'
+    type: 'send_message',
+    name: 'Send Message',
+    icon: 'M',
+    iconClass: 'bg-purple-500'
   },
   {
-    type: 'send_reply',
-    name: '发送并等待回复',
-    icon: 'R',
+    type: 'send_and_wait_for_reply',
+    name: 'Send & Wait for Reply',
+    icon: 'W',
+    iconClass: 'bg-purple-500'
+  },
+  {
+    type: 'send_to_flex',
+    name: 'Send to Flex',
+    icon: 'F',
     iconClass: 'bg-purple-500'
   }
 ]
 
+// API Request Components
+const apiComponents = [
+  {
+    type: 'make_http_request',
+    name: 'Make HTTP Request',
+    icon: 'H',
+    iconClass: 'bg-yellow-500'
+  },
+  {
+    type: 'run_function',
+    name: 'Run Function',
+    icon: 'F',
+    iconClass: 'bg-yellow-500'
+  }
+]
+
+// Filtered Components
+const filteredFlowControlComponents = computed(() => {
+  return filterComponentsBySearch(flowControlComponents)
+})
+
+const filteredVoiceComponents = computed(() => {
+  return filterComponentsBySearch(voiceComponents)
+})
+
+const filteredMessagingComponents = computed(() => {
+  return filterComponentsBySearch(messagingComponents)
+})
+
+const filteredApiComponents = computed(() => {
+  return filterComponentsBySearch(apiComponents)
+})
+
+const showNoResults = computed(() => {
+  return searchQuery.value !== '' && 
+         filteredFlowControlComponents.value.length === 0 &&
+         filteredVoiceComponents.value.length === 0 &&
+         filteredMessagingComponents.value.length === 0 &&
+         filteredApiComponents.value.length === 0
+})
+
+// Filter Function
+function filterComponentsBySearch(components: any[]) {
+  if (!searchQuery.value) return components
+  
+  const query = searchQuery.value.toLowerCase()
+  return components.filter(component => 
+    component.name.toLowerCase().includes(query) ||
+    component.type.toLowerCase().includes(query)
+  )
+}
+
+// Add Node Function
 const addNode = (type: string) => {
   const newNode = {
     id: `${type}-${uuidv4()}`,
     type,
     position: { x: 100, y: 100 },
-    data: { 
-      label: getDefaultLabel(type),
-      trigger: 'Incoming Message',
-      waitTime: 30,
-      replyContent: ''
-    }
+    data: getDefaultNodeData(type)
   }
   
   addNodes([newNode])
+  emit('hide')
 }
 
-const getDefaultLabel = (type: string) => {
+// Get Default Node Data
+const getDefaultNodeData = (type: string) => {
   switch (type) {
-    case 'trigger':
-      return 'Trigger'
-    case 'send_reply':
-      return 'Send & Reply'
-    case 'split':
-      return 'Split'
-    case 'variables':
-      return 'Variables'
-    case 'subflow':
-      return 'Subflow'
-    case 'gather_input':
-      return 'Gather Input'
+    case 'send_message':
+      return {
+        label: 'Send Message',
+        message: '',
+        mediaUrl: ''
+      }
     case 'connect_call':
-      return 'Connect Call'
-    case 'record':
-      return 'Record'
-    case 'say_play':
-      return 'Say/Play'
+      return {
+        label: 'Connect Call To',
+        number: '',
+        timeout: 30
+      }
+    case 'gather_input':
+      return {
+        label: 'Gather Input',
+        prompt: '',
+        timeout: 5,
+        finishOnKey: '#'
+      }
+    case 'set_variables':
+      return {
+        label: 'Set Variables',
+        variables: {}
+      }
+    case 'split':
+      return {
+        label: 'Split Based On...',
+        variable: '',
+        conditions: []
+      }
+    case 'record_call':
+      return {
+        label: 'Call Recording',
+        action: 'start',
+        channels: 'mono',
+        trim: false,
+        playBeep: false
+      }
     default:
-      return type
+      return {
+        label: type.split('_').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ')
+      }
   }
 }
 </script>
+
+<style scoped>
+/* Custom Scrollbar Styles */
+.custom-scrollbar {
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: #CBD5E1 transparent;  /* Firefox */
+}
+
+/* Webkit browsers (Chrome, Safari) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94A3B8;
+}
+
+</style> 
