@@ -211,6 +211,49 @@
           </template>
 
 
+          <template #node-split_intent="props">
+            <SplitOnIntentNode
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
+          <template #node-send_message="props">
+           <SendMessageNode 
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+           />
+          </template>
+
+          <template #node-enqueue_call="props">
+           <EnqueueCallNode 
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+           />
+          </template>
+
+
+          <template #node-collect_input="props">
+           <CollectInputNode 
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+           />
+          </template>
+
+          <template #node-send_and_wait="props">
+           <SendAndWaitNode 
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+           />
+          </template>
+
+          <template #node-wait_for_reply="props">
+            <WaitForReplyNode 
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
           <!-- 连接线模板 -->
           <template #edge-default="{ id, sourceX, sourceY, targetX, targetY }">
             <BaseEdge 
@@ -359,6 +402,14 @@ import RunFunctionNode from '@/components/nodes/RunFunctionNode.vue'
 import ConnectVirtualAgentNode from '@/components/nodes/ConnectVirtualAgentNode.vue'  
 import CapturePaymentsNode from '@/components/nodes/CapturePaymentsNode.vue'
 import ForkStreamNode from '@/components/nodes/ForkStreamNode.vue'
+import SendMessageNode from '@/components/nodes/SendMessageNode.vue';
+ 
+import CollectInputNode from '@/components/nodes/CollectInputNode.vue';
+import SendAndWaitNode from '@/components/nodes/SendAndWaitNode.vue';
+import SplitOnIntentNode from '@/components/nodes/SplitOnIntentNode.vue';
+
+import EnqueueCallNode from '@/components/nodes/EnqueueCallNode.vue'
+import WaitForReplyNode from '@/components/nodes/WaitForReplyNode.vue'
 
 
 import ConfigPanel from '@/components/panels/ConfigPanel.vue'

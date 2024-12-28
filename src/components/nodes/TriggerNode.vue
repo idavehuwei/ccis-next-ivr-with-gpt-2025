@@ -6,119 +6,108 @@
       <!-- Header -->
       <div class="bg-red-500 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
         <div class="flex items-center space-x-2">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M13 10V3L4 14h7v7l9-11h-7z" 
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="font-medium text-base">{{ nodeData.label || 'Trigger' }}</span>
+          <span class="font-medium text-base">Trigger</span>
           <button class="w-5 h-5 text-white/80 hover:text-white">
             <svg viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
           </button>
         </div>
+        <button class="text-white/80 hover:text-white">
+          <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+          </svg>
+        </button>
       </div>
 
-      <!-- Content -->
+      <!-- Trigger Options -->
       <div class="p-4">
-        <div class="flex flex-col gap-4">
-          <!-- Trigger Type Selection -->
-          <div>
-            <div class="text-sm font-medium text-gray-700 mb-2">TRIGGER TYPE</div>
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                v-for="type in triggerTypes"
-                :key="type.value"
-                class="flex items-center gap-2 p-3 rounded text-sm transition-colors border"
-                :class="[
-                  nodeData.triggerType === type.value 
-                    ? 'bg-red-50 text-red-700 border-red-200' 
-                    : 'text-gray-700 border-gray-200 hover:bg-gray-50'
-                ]"
-                @click="selectTriggerType(type.value)"
-              >
-                <component :is="type.icon" class="w-5 h-5" />
-                <span>{{ type.label }}</span>
-              </button>
-            </div>
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="option in triggerOptions"
+            :key="option.type"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors"
+            :class="[
+              option.type === selectedTrigger 
+                ? 'bg-red-500 text-white' 
+                : 'bg-red-50 text-red-500 hover:bg-red-100'
+            ]"
+            @click="selectTrigger(option.type)"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" v-html="option.icon"/>
+            {{ option.name }}
+            <span class="w-4 h-4 border-[1.5px] border-current rounded-full flex items-center justify-center text-xs">?</span>
+          </button>
+        </div>
+
+        <!-- Selected Trigger Configuration -->
+        <div v-if="selectedTrigger" class="mt-4 space-y-4">
+          <!-- Webhook Configuration -->
+          <div v-if="selectedTrigger === 'webhook'" class="bg-gray-50 rounded p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Webhook URL
+            </label>
+            <input
+              type="text"
+              v-model="nodeData.webhookUrl"
+              placeholder="https://your-domain.com/webhook"
+              class="w-full px-3 py-2 border rounded-md text-sm"
+              @change="updateNode"
+            />
           </div>
 
-          <!-- Trigger Conditions -->
-          <div v-if="nodeData.triggerType === 'conditional'">
-            <div class="text-sm font-medium text-gray-700 mb-2">CONDITIONS</div>
+          <!-- Schedule Configuration -->
+          <div v-if="selectedTrigger === 'schedule'" class="bg-gray-50 rounded p-4">
             <div class="space-y-2">
-              <div v-for="(condition, index) in nodeData.conditions" :key="index"
-                   class="flex gap-2 items-start">
-                <select 
-                  v-model="condition.variable"
-                  class="flex-1 px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                >
-                  <option value="">Select variable...</option>
-                  <option v-for="variable in availableVariables" 
-                          :key="variable"
-                          :value="variable">
-                    {{ variable }}
-                  </option>
-                </select>
-                <select 
-                  v-model="condition.operator"
-                  class="w-32 px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                >
-                  <option value="equals">equals</option>
-                  <option value="contains">contains</option>
-                  <option value="starts_with">starts with</option>
-                  <option value="greater_than">greater than</option>
-                  <option value="less_than">less than</option>
-                </select>
-                <input 
+              <label class="block text-sm font-medium text-gray-700">
+                Schedule Type
+              </label>
+              <select 
+                v-model="nodeData.scheduleType"
+                class="w-full px-3 py-2 border rounded-md text-sm"
+                @change="updateNode"
+              >
+                <option value="cron">Cron Expression</option>
+                <option value="interval">Interval</option>
+                <option value="fixed">Fixed Time</option>
+              </select>
+              
+              <div v-if="nodeData.scheduleType === 'cron'">
+                <input
                   type="text"
-                  v-model="condition.value"
-                  placeholder="Value"
-                  class="flex-1 px-3 py-2 border rounded text-sm"
+                  v-model="nodeData.cronExpression"
+                  placeholder="* * * * *"
+                  class="w-full px-3 py-2 border rounded-md text-sm"
                   @change="updateNode"
                 />
-                <button 
-                  @click="removeCondition(index)"
-                  class="p-2 text-red-500 hover:text-red-600"
-                >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
               </div>
-              <button
-                @click="addCondition"
-                class="text-red-600 hover:text-red-700 text-sm"
-              >
-                + Add Condition
-              </button>
             </div>
           </div>
 
-          <!-- Subflow Selection -->
-          <div v-if="nodeData.triggerType === 'subflow'">
-            <div class="text-sm font-medium text-gray-700 mb-2">SELECT SUBFLOW</div>
-            <select
-              v-model="nodeData.subflowId"
-              class="w-full px-3 py-2 border rounded text-sm"
-              @change="updateNode"
-            >
-              <option value="">Select a subflow...</option>
-              <option v-for="flow in availableFlows" 
-                      :key="flow.id" 
-                      :value="flow.id">
-                {{ flow.name }}
-              </option>
-            </select>
-          </div>
-
-          <!-- API Configuration -->
-          <div v-if="nodeData.triggerType === 'api'">
-            <div class="text-sm font-medium text-gray-700 mb-2">API ENDPOINT</div>
-            <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-              {{ apiEndpoint }}
+          <!-- Channel-specific Configuration -->
+          <div v-if="['facebook', 'whatsapp'].includes(selectedTrigger)" class="bg-gray-50 rounded p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Message Types
+            </label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  v-model="nodeData.messageTypes.text"
+                  class="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                  @change="updateNode"
+                />
+                <span class="ml-2 text-sm text-gray-600">Text Messages</span>
+              </label>
+              <label class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  v-model="nodeData.messageTypes.media"
+                  class="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                  @change="updateNode"
+                />
+                <span class="ml-2 text-sm text-gray-600">Media Messages</span>
+              </label>
             </div>
           </div>
         </div>
@@ -127,9 +116,11 @@
 
     <!-- Connection Points -->
     <div class="flex justify-around mt-3">
-      <div v-for="output in getOutputs()" 
-           :key="output.id"
-           class="flex flex-col items-center">
+      <div 
+        v-for="(output, index) in getOutputs()" 
+        :key="output.id"
+        class="flex flex-col items-center"
+      >
         <Handle
           type="source"
           :position="Position.Bottom"
@@ -143,128 +134,106 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { Position, Handle } from '@vue-flow/core'
 
 const props = defineProps<{
-  id: string
-  data?: any
   isSelected?: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'update', id: string, data: any): void
+  (e: 'select-trigger', type: string): void
 }>()
 
-// 默认值
-const defaultData = {
-  label: 'Trigger',
-  triggerType: 'incoming_call',
-  conditions: [],
-  subflowId: '',
+const triggerOptions = [
+  {
+    type: 'incoming_message',
+    name: 'Incoming Message',
+    icon: '<path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-width="2"/>'
+  },
+  {
+    type: 'incoming_call',
+    name: 'Incoming Call',
+    icon: '<path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" stroke-width="2"/>'
+  },
+  {
+    type: 'webhook',
+    name: 'Webhook',
+    icon: '<path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+  },
+  {
+    type: 'facebook',
+    name: 'Facebook Message',
+    icon: '<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+  },
+  {
+    type: 'whatsapp',
+    name: 'WhatsApp Message',
+    icon: '<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+  },
+  {
+    type: 'schedule',
+    name: 'Scheduled Task',
+    icon: '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+  },
+  {
+    type: 'api',
+    name: 'REST API',
+    icon: '<path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+  },
+  {
+    type: 'conversation',
+    name: 'Conversation',
+    icon: '<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+  }
+]
+
+// 节点数据
+const nodeData = ref({
   webhookUrl: '',
-}
-
-// 使用ref存储节点数据
-const nodeData = ref({...defaultData})
-
-// 监听props.data变化
-watch(() => props.data, (newData) => {
-  nodeData.value = {
-    ...defaultData,
-    ...newData
+  scheduleType: 'cron',
+  cronExpression: '* * * * *',
+  messageTypes: {
+    text: true,
+    media: false
   }
-}, { immediate: true, deep: true })
-
-// 触发类型定义
-const triggerTypes = [
-  { 
-    value: 'incoming_call',
-    label: 'Incoming Call',
-    icon: 'PhoneIcon'
-  },
-  { 
-    value: 'incoming_message',
-    label: 'Incoming Message',
-    icon: 'ChatIcon'
-  },
-  { 
-    value: 'api',
-    label: 'API Trigger',
-    icon: 'CodeIcon'
-  },
-  { 
-    value: 'conditional',
-    label: 'Conditional',
-    icon: 'SwitchIcon'
-  },
-  { 
-    value: 'subflow',
-    label: 'Subflow',
-    icon: 'ArrowsExpandIcon'
-  }
-]
-
-// 模拟数据
-const availableVariables = [
-  'flow.customer_type',
-  'flow.language',
-  'contact.phone_number',
-  'contact.name'
-]
-
-const availableFlows = [
-  { id: 'flow_1', name: 'Customer Support' },
-  { id: 'flow_2', name: 'Sales Process' },
-  { id: 'flow_3', name: 'Order Handling' }
-]
-
-// 计算API端点
-const apiEndpoint = computed(() => {
-  return `https://your-domain.twil.io/triggers/${props.id}`
 })
 
-// 条件管理
-const addCondition = () => {
-  nodeData.value.conditions.push({
-    variable: '',
-    operator: 'equals',
-    value: ''
-  })
-  updateNode()
-}
+const selectedTrigger = ref('incoming_message')
 
-const removeCondition = (index: number) => {
-  nodeData.value.conditions.splice(index, 1)
-  updateNode()
+const selectTrigger = (type: string) => {
+  selectedTrigger.value = type
+  emit('select-trigger', type)
 }
 
 // 获取输出连接点
 const getOutputs = () => {
-  switch (nodeData.value.triggerType) {
-    case 'conditional':
+  const baseOutputs = [
+    { id: 'success', label: 'Success' }
+  ]
+
+  // 根据触发器类型添加额外的输出
+  switch (selectedTrigger.value) {
+    case 'webhook':
+    case 'api':
       return [
-        { id: 'true', label: 'True' },
-        { id: 'false', label: 'False' }
+        ...baseOutputs,
+        { id: 'error', label: 'Error' }
       ]
-    case 'subflow':
+    case 'schedule':
       return [
-        { id: 'completed', label: 'Completed' },
-        { id: 'failed', label: 'Failed' }
+        ...baseOutputs,
+        { id: 'timeout', label: 'Timeout' }
       ]
     default:
-      return [
-        { id: 'next', label: 'Next' }
-      ]
+      return baseOutputs
   }
 }
 
-const selectTriggerType = (type: string) => {
-  nodeData.value.triggerType = type
-  updateNode()
-}
-
 const updateNode = () => {
-  emit('update', props.id, nodeData.value)
+  emit('update', props.id, {
+    ...nodeData.value,
+    triggerType: selectedTrigger.value
+  })
 }
 </script>

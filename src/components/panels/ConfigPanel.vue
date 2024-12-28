@@ -38,6 +38,9 @@ import TabNav from './config-panel/TabNav.vue';
 import SetVariablesConfig from './widget-configs/SetVariablesConfig.vue';
 import SayPlayConfig from './widget-configs/SayPlayConfig.vue';
 import HttpRequestConfig from './widget-configs/HttpRequestConfig.vue';
+import RecordConfig from './widget-configs/RecordConfig.vue';
+import EnqueueCallConfig from './widget-configs/EnqueueCallConfig.vue'
+ 
 
 const props = defineProps<{
   selectedNode?: IVRNode | null;
@@ -58,6 +61,7 @@ const tabs = [
 ];
 
 const getConfigComponent = (type?: string) => {
+  console.log('getConfigComponent:' + type )
   switch(type) {
     case 'set_variables':
       return SetVariablesConfig;
@@ -65,6 +69,12 @@ const getConfigComponent = (type?: string) => {
       return SayPlayConfig;
     case 'http_request':
       return HttpRequestConfig;
+    case 'call_recording':  
+      return RecordConfig;
+    case 'enqueue_call':  
+      return EnqueueCallConfig;
+ 
+
     default:
       return null;
   }

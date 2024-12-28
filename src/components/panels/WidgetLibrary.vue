@@ -158,130 +158,129 @@ const searchQuery = ref('')
 
 // Flow Control Components
 const flowControlComponents = [
-
- {
-    type: 'connect_virtual_agent',
-    name: 'Connect Virtual Agent',
-    icon: 'VA',
-    iconClass: 'bg-indigo-500',
-    description: 'Connect to Virtual Agent for automated support'
-  },
   {
     type: 'split',
-    name: 'Split Based On...',
+    name: '根据...拆分',
     icon: 'S',
     iconClass: 'bg-blue-500'
   },
-
-  {
-    type: 'fork_stream',
-    name: 'Fork Stream',
-    icon: '🔀',
-    iconClass: 'bg-purple-500',
-    description: 'Split flow into multiple parallel streams'
-  },
-
-  {
-    type: 'capture_payments',
-    name: 'Capture Payments',
-    icon: '💳',
-    iconClass: 'bg-emerald-500',
-    description: 'Securely collect and process payments'
-  },
-
   {
     type: 'set_variables',
-    name: 'Set Variables',
+    name: '设置变量',
     icon: 'V',
     iconClass: 'bg-blue-500'
   },
   {
-    type: 'run_function',
-    name: 'Run Function',
+    type: 'subflow',
+    name: '运行子流程',
+    icon: 'R',
+    iconClass: 'bg-blue-500'
+  },
+  {
+    type: 'fork_stream',
+    name: '分叉流',
     icon: 'F',
     iconClass: 'bg-blue-500'
   },
   {
-    type: 'run_subflow',
-    name: 'Run Subflow',
-    icon: 'S',
+    type: 'connect_virtual_agent',
+    name: '连接虚拟Agent',
+    icon: 'A',
     iconClass: 'bg-blue-500'
   }
-]
+];
 
-// Voice Components
 const voiceComponents = [
   {
-    type: 'connect_call',
-    name: 'Connect Call To',
-    icon: 'C',
-    iconClass: 'bg-green-500'
-  },
-  {
-    type: 'say_play',
-    name: 'Say/Play',
-    icon: 'S',
-    iconClass: 'bg-green-500'
-  },
-  {
     type: 'gather_input',
-    name: 'Gather Input on Call',
+    name: '通话中收集输入',
     icon: 'G',
     iconClass: 'bg-green-500'
   },
   {
-    type: 'record_call',
-    name: 'Record Call',
+    type: 'connect_call',
+    name: '连接通话',
+    icon: 'C',
+    iconClass: 'bg-green-500'
+  },
+  {
+    type: 'record',
+    name: '记录语音邮件',
     icon: 'R',
     iconClass: 'bg-green-500'
   },
+
   {
-    type: 'record_voicemail',
-    name: 'Record Voicemail',
-    icon: 'V',
+    type: 'wait_for_reply',
+    name: 'Wait For Reply',
+    icon: 'W',
+    iconClass: 'bg-indigo-500',
+    description: 'Wait for user response with timeout'
+  },
+
+  {
+    type: 'say_play',
+    name: '说/播放',
+    icon: 'P',
     iconClass: 'bg-green-500'
   },
   {
-    type: 'make_outgoing_call',
-    name: 'Make Outgoing Call',
+    type: 'make_call',
+    name: '拨出电话',
     icon: 'O',
+    iconClass: 'bg-green-500'
+  },
+  {
+    type: 'call_recording',
+    name: '通话录音',
+    icon: 'C',
     iconClass: 'bg-green-500'
   },
   {
     type: 'enqueue_call',
     name: 'Enqueue Call',
-    icon: 'E',
-    iconClass: 'bg-green-500'
-  },
-  {
-    type: 'add_twiml',
-    name: 'Add TwiML',
-    icon: 'T',
-    iconClass: 'bg-green-500'
+    icon: 'Q',
+    iconClass: 'bg-green-500',
+    description: 'Add caller to a queue'
   }
-]
+];
 
 // Messaging Components
 const messagingComponents = [
   {
+    type: 'trigger',
+    name: '触发器',
+    icon: 'T',
+    iconClass: 'bg-red-500'
+  },
+  {
     type: 'send_message',
-    name: 'Send Message',
+    name: '发送消息',
     icon: 'M',
-    iconClass: 'bg-purple-500'
+    iconClass: 'bg-blue-500'
   },
   {
-    type: 'send_and_wait_for_reply',
-    name: 'Send & Wait for Reply',
+    type: 'send_and_wait',
+    name: '发送并等待回复',
     icon: 'W',
-    iconClass: 'bg-purple-500'
+    iconClass: 'bg-purple-500',
+    description: 'Send a message and wait for response'
   },
   {
-    type: 'send_to_flex',
-    name: 'Send to Flex',
-    icon: 'F',
-    iconClass: 'bg-purple-500'
+    type: 'collect_input',
+    name: '收集输入',
+    icon: 'C',
+    iconClass: 'bg-green-500',
+    description: 'Collect and validate user input'
+  },
+  {
+    type: 'split_intent',
+    name: '意图分析',
+    icon: 'AI',
+    iconClass: 'bg-purple-500',
+    description: 'Route based on message intent'
   }
-]
+];
 
 // API Request Components
 const apiComponents = [
