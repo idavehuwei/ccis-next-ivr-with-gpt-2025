@@ -1,4 +1,4 @@
-# src/views/studio/FlowDesigner.vue
+<!-- src/views/FlowDesigner.vue -->
 <template>
   <div class="h-screen flex flex-col">
     <!-- Top Bar -->
@@ -24,6 +24,13 @@
           @click="handlePublish"
         >
           Publish
+        </button>
+
+        <button 
+          class="px-4 py-2 bg-white border rounded shadow-sm hover:bg-gray-50"
+          @click="showTemplateLoader = true"
+        >
+          Load Template
         </button>
       </div>
     </div>
@@ -67,9 +74,9 @@
           @undo="onUndo"
           @redo="onRedo"
         />
-        
-        <VueFlow 
-          v-model="elements"
+        <!-- VueFlow Canvas -->
+        <VueFlow
+          ref="vueFlowRef"
           :default-edge-options="defaultEdgeOptions"
           :connect-on-click="false"
           :default-viewport="{ zoom: 1, x: 0, y: 0 }"
@@ -158,14 +165,12 @@
             />
           </template>
 
-
           <template #node-fork_stream="props">
             <ForkStreamNode
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
             />
           </template>
-
 
           <template #node-connect_virtual_agent="props">
             <ConnectVirtualAgentNode
@@ -181,7 +186,6 @@
             />
           </template>
 
-
           <template #node-say_play="props">
             <SayPlayNode
               v-bind="props"
@@ -189,28 +193,12 @@
             />
           </template>
 
-          <template #node-call_recording="props">
-            <CallRecordingNode
+          <template #node-nlp_intent="props">
+            <NLPIntentNode
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
             />
           </template>
-
-          <template #node-http_request="props">
-            <HttpRequestNode
-              v-bind="props"
-              :is-selected="selectedNode?.id === props.id"
-            />
-          </template>
-
-          <template #node-run_function="props">
-            <RunFunctionNode
-              v-bind="props"
-              :is-selected="selectedNode?.id === props.id"
-            />
-          </template>
-
-
           <template #node-split_intent="props">
             <SplitOnIntentNode
               v-bind="props"
@@ -219,32 +207,31 @@
           </template>
 
           <template #node-send_message="props">
-           <SendMessageNode 
+            <SendMessageNode 
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
-           />
+            />
           </template>
 
           <template #node-enqueue_call="props">
-           <EnqueueCallNode 
+            <EnqueueCallNode 
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
-           />
+            />
           </template>
 
-
           <template #node-collect_input="props">
-           <CollectInputNode 
+            <CollectInputNode 
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
-           />
+            />
           </template>
 
           <template #node-send_and_wait="props">
-           <SendAndWaitNode 
+            <SendAndWaitNode 
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
-           />
+            />
           </template>
 
           <template #node-wait_for_reply="props">
@@ -269,11 +256,17 @@
             />
           </template>
 
-
           <!-- Minimap -->
           <MiniMap v-if="showMinimap" />
         </VueFlow>
       </div>
+
+      <!-- Template Loader -->
+      <TemplateLoader 
+        :is-open="showTemplateLoader"
+        @close="showTemplateLoader = false"
+        @load="handleLoadTemplate"
+      />
 
       <!-- Right Side Panels -->
       <Transition name="slide-right">
@@ -357,16 +350,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-
-// Vue Flow 核心
-import '@vue-flow/core/dist/style.css'
-import '@vue-flow/core/dist/theme-default.css'
 import { 
   VueFlow, 
-  useVueFlow, 
+  useVueFlow,
+  Panel, 
+  BackgroundVariant,
+  FlowEvents,
+  EdgeChange,
+  NodeChange,
   BaseEdge, 
   getSmoothStepPath,
   Edge,
@@ -375,15 +368,30 @@ import {
   EdgeMouseEvent,
   getIncomers,
   getOutgoers,
-  getConnectedEdges
+  getConnectedEdges,
+  Position,
 } from '@vue-flow/core'
+
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot,
+} from '@headlessui/vue'
+
+// Vue Flow 核心
+import '@vue-flow/core/dist/style.css'
+import '@vue-flow/core/dist/theme-default.css'
 
 // Vue Flow 插件组件
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
 
-// Components
+import TemplateLoader from '@/components/TemplateLoader.vue'
+
+// 节点组件导入
 import FloatingToolbar from '@/components/FloatingToolbar.vue'
 import TriggerNode from '@/components/nodes/TriggerNode.vue'
 import SendAndReplyNode from '@/components/nodes/SendAndReplyNode.vue'
@@ -391,31 +399,30 @@ import GatherInputNode from '@/components/nodes/GatherInputNode.vue'
 import ConnectCallNode from '@/components/nodes/ConnectCallNode.vue'
 import OutgoingCallNode from '@/components/nodes/OutgoingCallNode.vue'
 import SplitNode from '@/components/nodes/SplitNode.vue'
-
 import SayPlayNode from '@/components/nodes/SayPlayNode.vue'
 import CallRecordingNode from '@/components/nodes/CallRecordingNode.vue'
-
 import SetVariablesNode from '@/components/nodes/SetVariablesNode.vue'
-
 import HttpRequestNode from '@/components/nodes/HttpRequestNode.vue'
 import RunFunctionNode from '@/components/nodes/RunFunctionNode.vue'
-import ConnectVirtualAgentNode from '@/components/nodes/ConnectVirtualAgentNode.vue'  
+import ConnectVirtualAgentNode from '@/components/nodes/ConnectVirtualAgentNode.vue'
 import CapturePaymentsNode from '@/components/nodes/CapturePaymentsNode.vue'
 import ForkStreamNode from '@/components/nodes/ForkStreamNode.vue'
-import SendMessageNode from '@/components/nodes/SendMessageNode.vue';
- 
-import CollectInputNode from '@/components/nodes/CollectInputNode.vue';
-import SendAndWaitNode from '@/components/nodes/SendAndWaitNode.vue';
-import SplitOnIntentNode from '@/components/nodes/SplitOnIntentNode.vue';
-
+import SendMessageNode from '@/components/nodes/SendMessageNode.vue'
+import CollectInputNode from '@/components/nodes/CollectInputNode.vue'
+import SendAndWaitNode from '@/components/nodes/SendAndWaitNode.vue'
+import SplitOnIntentNode from '@/components/nodes/SplitOnIntentNode.vue'
 import EnqueueCallNode from '@/components/nodes/EnqueueCallNode.vue'
 import WaitForReplyNode from '@/components/nodes/WaitForReplyNode.vue'
-
+import NLPIntentNode from '@/components/nodes/NLPIntentNode.vue'
 
 import ConfigPanel from '@/components/panels/ConfigPanel.vue'
 import WidgetLibrary from '@/components/panels/WidgetLibrary.vue'
 
+// Router
 const router = useRouter()
+
+// Vue Flow Ref
+const vueFlowRef = ref(null)
 
 // Flow State
 const flowName = ref('My first flow')
@@ -428,23 +435,41 @@ const showMinimap = ref(false)
 const canUndo = ref(false)
 const canRedo = ref(false)
 const isPublishModalOpen = ref(false)
+const showTemplateLoader = ref(false)
 
-// Get Vue Flow Instance
-const {
+// VueFlow Instance Setup
+const { 
+  getNodes,
+  getEdges,
   addNodes,
   addEdges,
-  updateNode,
-  updateEdge,
   removeNodes,
   removeEdges,
-  getNodes,
+  updateNode,
+  updateEdge,
   findNode,
   findEdge,
   zoomIn,
   zoomOut,
   fitView,
-  onPaneReady
-} = useVueFlow()
+  setNodes,
+  setEdges,
+  onPaneReady,
+  getViewport
+} = useVueFlow({
+  id: 'flow-designer',
+  defaultNodes: [{
+    id: 'trigger-1',
+    type: 'trigger',
+    position: { x: 250, y: 50 },
+    data: { 
+      label: 'Trigger',
+      trigger: 'Incoming Message'
+    }
+  }],
+  defaultEdges: [],
+  defaultViewport: { x: 0, y: 0, zoom: 1 }
+})
 
 // 默认连接线配置
 const defaultEdgeOptions = {
@@ -461,23 +486,49 @@ const defaultEdgeOptions = {
   }
 }
 
-// 初始节点
-const elements = ref([
-  {
-    id: 'trigger-1',
-    type: 'trigger',
-    position: { x: 250, y: 50 },
-    data: { label: 'Trigger' }
+// 模板加载处理
+const handleLoadTemplate = async (template: any) => {
+  try {
+    if (!vueFlowRef.value) {
+      console.error('VueFlow instance not initialized')
+      return
+    }
+
+    await nextTick() // 等待DOM更新
+
+    // 清除现有节点和边
+    setNodes([])
+    setEdges([])
+
+    // 添加模板中的节点和边
+    if (template.nodes && template.nodes.length > 0) {
+      await nextTick()
+      setNodes(template.nodes)
+    }
+    
+    if (template.edges && template.edges.length > 0) {
+      await nextTick()
+      setEdges(template.edges)
+    }
+
+    // 调整视图以显示所有节点
+    setTimeout(() => {
+      fitView({ padding: 0.2 })
+    }, 100)
+
+    // 重置更改计数
+    changesCount.value = 0
+    
+    // 关闭模板加载器
+    showTemplateLoader.value = false
+
+  } catch (error) {
+    console.error('Failed to load template:', error)
   }
-])
+}
 
 // 连接处理函数
 const handleConnect = (connection: Connection) => {
-  // 验证连接
-  // if (!isValidConnection(connection)) {
-  //   return false
-  // }
-
   const sourceNode = findNode(connection.source)
   const targetNode = findNode(connection.target)
 
@@ -507,126 +558,125 @@ const handleConnect = (connection: Connection) => {
 
 // Edge Event Handlers
 const handleEdgeUpdate = (oldEdge: Edge, newConnection: Connection) => {
-// if (!isValidConnection(newConnection)) {
-//   return
-// }
-updateEdge(oldEdge, newConnection)
-changesCount.value++
+  updateEdge(oldEdge, newConnection)
+  changesCount.value++
 }
 
 const handleEdgeRemove = (edge: Edge) => {
-removeEdges([edge])
-changesCount.value++
+  removeEdges([edge])
+  changesCount.value++
 }
 
 const onEdgeClick = (event: EdgeMouseEvent, edge: Edge) => {
-edge.selected = !edge.selected
+  edge.selected = !edge.selected
 }
 
+// 边的鼠标事件处理
 const onEdgeMouseEnter = (event: EdgeMouseEvent, edge: Edge) => {
-if (edge.data?.hoverable) {
-  edge.style = {
-    ...edge.style,
-    strokeWidth: 3,
-    stroke: '#ff4444'
+  if (edge.data?.hoverable) {
+    edge.style = {
+      ...edge.style,
+      strokeWidth: 3,
+      stroke: '#ff4444'
+    }
   }
-}
 }
 
 const onEdgeMouseLeave = (event: EdgeMouseEvent, edge: Edge) => {
-if (edge.data?.hoverable) {
-  edge.style = {
-    ...edge.style,
-    strokeWidth: 2,
-    stroke: '#e75f5f'
+  if (edge.data?.hoverable) {
+    edge.style = {
+      ...edge.style,
+      strokeWidth: 2,
+      stroke: '#e75f5f'
+    }
   }
 }
-}
 
-// Node Event Handlers
+// 节点事件处理
 const onNodeDragStart = (event: NodeMouseEvent) => {
-event.node.style = { ...event.node.style, opacity: 0.8 }
+  event.node.style = { ...event.node.style, opacity: 0.8 }
 }
 
 const onNodeDrag = (event: NodeMouseEvent) => {
-changesCount.value++
+  changesCount.value++
 }
 
 const onNodeDragStop = (event: NodeMouseEvent) => {
-event.node.style = { ...event.node.style, opacity: 1 }
+  event.node.style = { ...event.node.style, opacity: 1 }
 }
 
 const onNodeClick = (event: NodeMouseEvent) => {
-if (selectedNode.value) {
-  selectedNode.value.selected = false
-}
-selectedNode.value = event.node
-showConfig.value = true
-showWidgetLibrary.value = false
-event.node.selected = true
+  if (selectedNode.value) {
+    selectedNode.value.selected = false
+  }
+  selectedNode.value = event.node
+  showConfig.value = true
+  showWidgetLibrary.value = false
+  event.node.selected = true
 }
 
 const onPaneClick = () => {
-if (selectedNode.value) {
-  selectedNode.value.selected = false
-}
-selectedNode.value = null
+  if (selectedNode.value) {
+    selectedNode.value.selected = false
+  }
+  selectedNode.value = null
 }
 
-// Update Node Connections
+// 更新节点连接
 const updateNodesConnections = () => {
-const nodes = getNodes()
-nodes.forEach(node => {
-  const incomingEdges = getIncomers(node.id, nodes)
-  const outgoingEdges = getOutgoers(node.id, nodes)
-  
-  updateNode(node.id, {
-    ...node,
-    data: {
-      ...node.data,
-      hasIncoming: incomingEdges.length > 0,
-      hasOutgoing: outgoingEdges.length > 0
-    }
+  const nodes = getNodes()
+  nodes.forEach(node => {
+    const incomingEdges = getIncomers(node.id, nodes)
+    const outgoingEdges = getOutgoers(node.id, nodes)
+    
+    updateNode(node.id, {
+      ...node,
+      data: {
+        ...node.data,
+        hasIncoming: incomingEdges.length > 0,
+        hasOutgoing: outgoingEdges.length > 0
+      }
+    })
   })
-})
 }
 
-// Panel Handlers
+// 面板处理
 const toggleWidgetLibrary = () => {
-showWidgetLibrary.value = !showWidgetLibrary.value
-showConfig.value = !showWidgetLibrary.value
+  showWidgetLibrary.value = !showWidgetLibrary.value
+  showConfig.value = !showWidgetLibrary.value
 }
 
 const updateSelectedNode = (node: any) => {
-if (selectedNode.value) {
-  updateNode(selectedNode.value.id, node)
-  selectedNode.value = node
-  changesCount.value++
-}
+  if (selectedNode.value) {
+    updateNode(selectedNode.value.id, node)
+    selectedNode.value = node
+    changesCount.value++
+  }
 }
 
+// 添加新节点
 const addNewNode = (nodeType: string) => {
-const viewport = getViewport()
-const position = {
-  x: (-viewport.x + window.innerWidth / 2) / viewport.zoom - 150,
-  y: (-viewport.y + window.innerHeight / 2) / viewport.zoom - 100
-}
+  const viewport = getViewport()
+  const position = {
+    x: (-viewport.x + window.innerWidth / 2) / viewport.zoom - 150,
+    y: (-viewport.y + window.innerHeight / 2) / viewport.zoom - 100
+  }
 
-const nodes = getNodes()
-if (nodes.length > 0) {
-  const lastNode = nodes[nodes.length - 1]
-  position.y = lastNode.position.y + 200
-}
+  const nodes = getNodes()
+  if (nodes.length > 0) {
+    const lastNode = nodes[nodes.length - 1]
+    position.y = lastNode.position.y + 200
+  }
 
-const newNode = {
-  id: `${nodeType}-${Date.now()}`,
-  type: nodeType,
-  position,
-  data: getDefaultNodeData(nodeType)
-}
+  const newNode = {
+    id: `${nodeType}-${Date.now()}`,
+    type: nodeType,
+    position,
+    data: getDefaultNodeData(nodeType)
+  }
 
-addNodes([newNode])
-changesCount.value++
+  addNodes([newNode])
+  changesCount.value++
 }
 
 // 获取节点默认数据
@@ -687,91 +737,113 @@ const getDefaultNodeData = (type: string) => {
         splitType: 'variable',
         conditions: []
       }
+    case 'nlp_intent':
+      return {
+        label: 'NLP Intent Classification',
+        service: 'dialogflow',
+        intents: [
+          { name: 'greeting', confidence: '0.7' },
+          { name: 'help', confidence: '0.7' },
+          { name: 'goodbye', confidence: '0.7' }
+        ]
+      }
+    case 'send_message':
+      return {
+        label: 'Send Message',
+        message: '',
+        mediaUrl: ''
+      }
+    case 'wait_for_reply':
+      return {
+        label: 'Wait for Reply',
+        timeout: 300,
+        timeoutUnit: 'seconds',
+        enableValidation: false
+      }
     default:
       return {
-        label: type.split('_').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ')
+        label: type
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
       }
   }
 }
 
-// Canvas Controls
+// 画布控制
 const onZoomIn = () => {
-zoomIn()
+  zoomIn()
 }
 
 const onZoomOut = () => {
-zoomOut()
+  zoomOut()
 }
 
 const onFitView = () => {
-fitView()
+  fitView()
 }
 
 const onUndo = () => {
-if (canUndo.value) {
-  // TODO: 实现撤销功能
-}
+  if (canUndo.value) {
+    // TODO: 实现撤销功能
+  }
 }
 
 const onRedo = () => {
-if (canRedo.value) {
-  // TODO: 实现重做功能
-}
-}
-
-// Handle trigger selection
-const handleTriggerSelect = (type: string) => {
-if (selectedNode.value && selectedNode.value.type === 'trigger') {
-  updateSelectedNode({
-    ...selectedNode.value,
-    data: { ...selectedNode.value.data, trigger: type }
-  })
-}
-}
-
-// Save & Publish
-const handleSave = async () => {
-try {
-  // TODO: 实现保存逻辑
-  const flow = {
-    name: flowName.value,
-    nodes: getNodes(),
-    edges: getEdges(),
-    viewport: getViewport()
+  if (canRedo.value) {
+    // TODO: 实现重做功能
   }
-  console.log('Saving flow:', flow)
-  changesCount.value = 0
-} catch (error) {
-  console.error('Failed to save flow:', error)
 }
+
+// Trigger选择处理
+const handleTriggerSelect = (type: string) => {
+  if (selectedNode.value && selectedNode.value.type === 'trigger') {
+    updateSelectedNode({
+      ...selectedNode.value,
+      data: { ...selectedNode.value.data, trigger: type }
+    })
+  }
+}
+
+// 保存和发布相关函数
+const handleSave = async () => {
+  try {
+    const flow = {
+      name: flowName.value,
+      nodes: getNodes(),
+      edges: getEdges(),
+      viewport: getViewport()
+    }
+    console.log('Saving flow:', flow)
+    changesCount.value = 0
+  } catch (error) {
+    console.error('Failed to save flow:', error)
+  }
 }
 
 const handlePublish = () => {
-isPublishModalOpen.value = true
+  isPublishModalOpen.value = true
 }
 
 const closePublishModal = () => {
-isPublishModalOpen.value = false
+  isPublishModalOpen.value = false
 }
 
 const confirmPublish = async () => {
-try {
-  await handleSave()
-  // TODO: 实现发布逻辑
-  isPublishModalOpen.value = false
-  router.push('/studio/flows')
-} catch (error) {
-  console.error('Failed to publish flow:', error)
-}
+  try {
+    await handleSave()
+    isPublishModalOpen.value = false
+    router.push('/studio/flows')
+  } catch (error) {
+    console.error('Failed to publish flow:', error)
+  }
 }
 
-// Init
+// 生命周期钩子
 onMounted(() => {
-onPaneReady(({ fitView }) => {
-  fitView()
-})
+  onPaneReady(({ fitView }) => {
+    fitView()
+  })
 })
 </script>
 
@@ -903,5 +975,41 @@ onPaneReady(({ fitView }) => {
 .vue-flow__node:hover {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
-</style>
 
+/* 面板过渡效果 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 拖拽时的光标样式 */
+.vue-flow__node.dragging {
+  cursor: grabbing;
+}
+
+/* 连接点激活状态 */
+.vue-flow__handle.connectable {
+  cursor: crosshair;
+}
+
+/* 选中节点的连接点样式 */
+.vue-flow__node.selected .vue-flow__handle {
+  background: #3b82f6;
+}
+
+/* 画布工具栏 */
+.floating-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 4;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+</style>

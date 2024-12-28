@@ -1,5 +1,8 @@
 import HttpRequestNode from '@/components/nodes/HttpRequestNode.vue';
 
+import NLPIntentNode from '@/components/nodes/NLPIntentNode.vue'
+
+
 export const NODE_TYPES = {
   TRIGGER: {
     type: 'trigger',
@@ -113,6 +116,17 @@ export const NODE_TYPES = {
       label: 'set_variables_1',
       variables: {}
     }
+  },
+
+  NLP_INTENT: {
+    type: 'nlp_intent',
+    name: 'NLP Intent Classification',
+    category: 'AI & ML',
+    description: 'Classify message intent using NLP',
+    component: NLPIntentNode,
+    outputs: ['intent_matched', 'fallback'],
+    maxOutputs: 'unlimited',
+    color: 'purple'
   },
 
   http_request: HttpRequestNode,
