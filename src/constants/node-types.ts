@@ -27,6 +27,39 @@ export const NODE_TYPES = {
     maxOutputs: 1,
     color: 'blue'
   },
+
+  CONNECT_VIRTUAL_AGENT: {
+    type: 'connect_virtual_agent',
+    name: 'Connect Virtual Agent',
+    category: 'Flow Control',
+    description: 'Connect to Virtual Agent for automated support',
+    outputs: ['completed', 'handoff', 'hangup', 'failed'],
+    maxOutputs: 4,
+    color: 'indigo'
+  },
+
+  CAPTURE_PAYMENTS: {
+    type: 'capture_payments',
+    name: 'Capture Payments',
+    category: 'Payment',
+    defaultData: {
+      amount: 0,
+      currency: 'USD',
+      description: '',
+      paymentPrompt: '',
+      maxAttempts: 3,
+      allowedMethods: {
+        creditCard: true,
+        bankTransfer: false,
+        digitalWallet: false
+      },
+      validation: {
+        address: false,
+        cvv: true
+      }
+    }
+  },
+  
   SPLIT: {
     type: 'split',
     name: 'Split Based On...',

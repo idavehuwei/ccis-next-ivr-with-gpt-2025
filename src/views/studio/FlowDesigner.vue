@@ -158,6 +158,30 @@
             />
           </template>
 
+
+          <template #node-fork_stream="props">
+            <ForkStreamNode
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
+
+          <template #node-connect_virtual_agent="props">
+            <ConnectVirtualAgentNode
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
+          <template #node-capture_payments="props">
+            <CapturePaymentsNode
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
+
           <template #node-say_play="props">
             <SayPlayNode
               v-bind="props"
@@ -167,6 +191,20 @@
 
           <template #node-call_recording="props">
             <CallRecordingNode
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
+          <template #node-http_request="props">
+            <HttpRequestNode
+              v-bind="props"
+              :is-selected="selectedNode?.id === props.id"
+            />
+          </template>
+
+          <template #node-run_function="props">
+            <RunFunctionNode
               v-bind="props"
               :is-selected="selectedNode?.id === props.id"
             />
@@ -315,6 +353,12 @@ import SayPlayNode from '@/components/nodes/SayPlayNode.vue'
 import CallRecordingNode from '@/components/nodes/CallRecordingNode.vue'
 
 import SetVariablesNode from '@/components/nodes/SetVariablesNode.vue'
+
+import HttpRequestNode from '@/components/nodes/HttpRequestNode.vue'
+import RunFunctionNode from '@/components/nodes/RunFunctionNode.vue'
+import ConnectVirtualAgentNode from '@/components/nodes/ConnectVirtualAgentNode.vue'  
+import CapturePaymentsNode from '@/components/nodes/CapturePaymentsNode.vue'
+import ForkStreamNode from '@/components/nodes/ForkStreamNode.vue'
 
 
 import ConfigPanel from '@/components/panels/ConfigPanel.vue'
@@ -536,30 +580,69 @@ changesCount.value++
 
 // 获取节点默认数据
 const getDefaultNodeData = (type: string) => {
-switch (type) {
-  case 'trigger':
-    return {
-      label: 'Trigger',
-      trigger: 'Incoming Message'
-    }
-  case 'make_call':
-    return {
-      label: 'Make Outgoing Call',
-      address: '{{contact.channel.address}}',
-      timeout: 30,
-      callerId: ''
-    }
-  case 'send_reply':
-    return {
-      label: 'Send & Reply',
-      message: '',
-      waitTime: 30
-    }
-  default:
-    return {
-      label: type
-    }
-}
+  switch (type) {
+    case 'trigger':
+      return {
+        label: 'Trigger',
+        trigger: 'Incoming Message'
+      }
+    case 'make_call':
+      return {
+        label: 'Make Outgoing Call',
+        address: '{{contact.channel.address}}',
+        timeout: 30,
+        callerId: ''
+      }
+    case 'send_reply':
+      return {
+        label: 'Send & Reply',
+        message: '',
+        waitTime: 30
+      }
+    case 'http_request':
+      return {
+        label: 'Make HTTP Request',
+        method: 'GET',
+        url: '',
+        contentType: 'application/json',
+        body: '',
+        useAuth: false,
+        authType: 'basic',
+        username: '',
+        password: '',
+        token: ''
+      }
+    case 'run_function':
+      return {
+        label: 'Run Function',
+        service: '',
+        environment: 'dev',
+        function: '',
+        parameters: [],
+        url: 'https://[service-name]-[number].[region].twil.io/[function-path]'
+      }
+    case 'say_play':
+      return {
+        label: 'Say/Play Message',
+        type: 'say',
+        message: 'Welcome to our service',
+        voice: 'alice',
+        language: 'en-US',
+        speed: 1
+      }
+    case 'split':
+      return {
+        label: 'Split Based On...',
+        splitType: 'variable',
+        conditions: []
+      }
+    default:
+      return {
+        label: type.split('_').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ')
+      }
+  }
 }
 
 // Canvas Controls

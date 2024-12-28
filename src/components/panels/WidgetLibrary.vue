@@ -108,7 +108,7 @@
         </div>
       </div>
 
-      <!-- API Requests -->
+      
       <div v-if="filteredApiComponents.length > 0" class="p-4 border-b">
         <div class="flex items-center mb-3">
           <svg class="w-4 h-4 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -124,10 +124,13 @@
             @click="addNode(component.type)"
           >
             <div class="w-8 h-8 rounded flex items-center justify-center mr-3 text-white font-bold"
-                 :class="component.iconClass">
+                :class="component.iconClass">
               {{ component.icon }}
             </div>
-            <span class="text-gray-700">{{ component.name }}</span>
+            <div>
+              <span class="text-gray-700">{{ component.name }}</span>
+              <p class="text-sm text-gray-500">{{ component.description }}</p>
+            </div>
           </button>
         </div>
       </div>
@@ -155,12 +158,37 @@ const searchQuery = ref('')
 
 // Flow Control Components
 const flowControlComponents = [
+
+ {
+    type: 'connect_virtual_agent',
+    name: 'Connect Virtual Agent',
+    icon: 'VA',
+    iconClass: 'bg-indigo-500',
+    description: 'Connect to Virtual Agent for automated support'
+  },
   {
     type: 'split',
     name: 'Split Based On...',
     icon: 'S',
     iconClass: 'bg-blue-500'
   },
+
+  {
+    type: 'fork_stream',
+    name: 'Fork Stream',
+    icon: '🔀',
+    iconClass: 'bg-purple-500',
+    description: 'Split flow into multiple parallel streams'
+  },
+
+  {
+    type: 'capture_payments',
+    name: 'Capture Payments',
+    icon: '💳',
+    iconClass: 'bg-emerald-500',
+    description: 'Securely collect and process payments'
+  },
+
   {
     type: 'set_variables',
     name: 'Set Variables',
@@ -257,17 +285,28 @@ const messagingComponents = [
 
 // API Request Components
 const apiComponents = [
+
+{
+    type: 'trigger',
+    name: 'Trigger Request',
+    icon: 'H',
+    iconClass: 'bg-yellow-500',
+    description: 'Make an HTTP request to an external service'
+  },
+
   {
-    type: 'make_http_request',
+    type: 'http_request',
     name: 'Make HTTP Request',
     icon: 'H',
-    iconClass: 'bg-yellow-500'
+    iconClass: 'bg-yellow-500',
+    description: 'Make an HTTP request to an external service'
   },
   {
     type: 'run_function',
     name: 'Run Function',
     icon: 'F',
-    iconClass: 'bg-yellow-500'
+    iconClass: 'bg-orange-500',
+    description: 'Execute a serverless function from your services'
   }
 ]
 
