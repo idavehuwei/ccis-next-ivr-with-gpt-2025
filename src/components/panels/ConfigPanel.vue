@@ -19,7 +19,7 @@
       <template v-if="currentTab === 'config' && selectedNode">
         <component
           :is="getConfigComponent(selectedNode.type)"
-          :node="selectedNode"
+          :data="selectedNode.data"
           @update="handleNodeUpdate"
         />
       </template>
@@ -39,8 +39,12 @@ import SetVariablesConfig from './widget-configs/SetVariablesConfig.vue';
 import SayPlayConfig from './widget-configs/SayPlayConfig.vue';
 import HttpRequestConfig from './widget-configs/HttpRequestConfig.vue';
 import RecordConfig from './widget-configs/RecordConfig.vue';
-import EnqueueCallConfig from './widget-configs/EnqueueCallConfig.vue'
- 
+import EnqueueCallConfig from './widget-configs/EnqueueCallConfig.vue';
+import TriggerConfig from './widget-configs/TriggerConfig.vue';
+import SplitNodeConfig from './widget-configs/SplitNodeConfig.vue';
+
+import SendMessageConfig from './widget-configs/SendMessageConfig.vue' // New
+
 
 const props = defineProps<{
   selectedNode?: IVRNode | null;
@@ -61,20 +65,25 @@ const tabs = [
 ];
 
 const getConfigComponent = (type?: string) => {
-  console.log('getConfigComponent:' + type )
   switch(type) {
+    case 'trigger':
+      return TriggerConfig;
+
+      case 'send_message':
+      return SendMessageConfig // New
+
     case 'set_variables':
       return SetVariablesConfig;
     case 'say_play':
       return SayPlayConfig;
     case 'http_request':
       return HttpRequestConfig;
-    case 'call_recording':  
+    case 'call_recording':
       return RecordConfig;
-    case 'enqueue_call':  
+    case 'enqueue_call':
       return EnqueueCallConfig;
- 
-
+    case 'split_node':
+      return SplitNodeConfig;
     default:
       return null;
   }
@@ -82,12 +91,18 @@ const getConfigComponent = (type?: string) => {
 
 const getNodeTitle = (type?: string) => {
   switch(type) {
+
+      case 'send_message':
+      return '发送消息'
+
     case 'set_variables':
       return '设置变量';
     case 'say_play':
       return '语音/播放';
     case 'http_request':
       return 'HTTP请求';
+    case 'split_node':
+      return 'Split Node';
     default:
       return '节点配置';
   }

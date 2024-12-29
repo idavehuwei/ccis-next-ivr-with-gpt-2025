@@ -1,17 +1,16 @@
-<!-- src/components/nodes/SplitNode.vue -->
 <template>
   <div class="node-container p-4 bg-white rounded-lg shadow border-2" 
        :class="{ 'border-blue-500': isSelected }">
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-lg font-medium">Split</h3>
       <div class="text-sm text-gray-500">
-        {{ conditions?.length || 0 }} conditions
+        {{ data.conditions?.length || 0 }} conditions
       </div>
     </div>
     
     <div class="text-sm text-gray-600">
-      <div v-if="conditions?.length">
-        <div v-for="(group, index) in conditions" :key="index" class="mb-1">
+      <div v-if="data.conditions?.length">
+        <div v-for="(group, index) in data.conditions" :key="index" class="mb-1">
           {{ group.operator }}: {{ formatConditions(group.conditions) }}
         </div>
       </div>
@@ -22,7 +21,7 @@
 
     <!-- 连接点 -->
     <Handle
-      v-for="(condition, index) in conditions"
+      v-for="(condition, index) in data.conditions"
       :key="index"
       type="source"
       :position="Position.Right"
