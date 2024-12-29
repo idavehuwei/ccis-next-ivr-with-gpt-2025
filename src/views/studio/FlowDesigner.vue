@@ -18,12 +18,20 @@
         <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">
           {{ changesCount }} Changes to Flow
         </span>
-        <button 
-          class="px-4 py-2 bg-white border rounded shadow-sm hover:bg-gray-50" 
-          @click="showVariableManager = true"
-        >
-          变量管理
+        <button class="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded" @click="handlePublish">
+          Publish
         </button>
+
+        <button class="px-4 py-2 bg-white border rounded shadow-sm hover:bg-gray-50" @click="showTemplateLoader = true">
+          Load Template
+        </button>
+      </div>
+
+
+      <div class="flex items-center space-x-3">
+        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">
+          {{ changesCount }} Changes to Flow
+        </span>
         <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           @click="showTestPanel = !showTestPanel">
           {{ showTestPanel ? 'Hide Test Panel' : 'Show Test Panel' }}
@@ -35,6 +43,16 @@
           Load Template
         </button>
       </div>
+
+      <div class="flex items-center space-x-3">
+        <button 
+          class="px-4 py-2 bg-white border rounded shadow-sm hover:bg-gray-50" 
+          @click="showVariableManager = true"
+        >
+          变量管理
+        </button>
+      </div>
+
     </div>
 
     <!-- Main Content -->
@@ -177,32 +195,23 @@
 
       <!-- Right Side Panels -->
       <Transition name="slide-right">
-        <template v-if="showConfig && !showWidgetLibrary">
-          <ConfigPanel 
-            :title="showVariableManager ? '变量管理' : 'FLOW CONFIGURATION'" 
-            :show-help="true"
-            :show-widget-library="false" 
-            :selected-node="selectedNode" 
-            @hide="handlePanelClose"
-            @toggle-widget-library="toggleWidgetLibrary" 
-            @update-node="updateSelectedNode" 
-            @save="handleSave"
-          >
-            <template v-if="selectedNode?.type === 'split' && !showVariableManager">
-              <ConditionBuilder 
-                :available-variables="flowVariables"
-                @update:conditions="updateNodeConditions"
-              />
-            </template>
-            
-            <template v-if="showVariableManager">
-              <VariableManager
-                :initial-variables="flowVariables"
-                @update:variables="updateFlowVariables"
-              />
-            </template>
-          </ConfigPanel>
-        </template>
+        <ConfigPanel v-if="showConfig && !showWidgetLibrary" :title="'FLOW CONFIGURATION'" :show-help="true"
+          :show-widget-library="false" :selected-node="selectedNode" @hide="showConfig = false"
+          @toggle-widget-library="toggleWidgetLibrary" @update-node="updateSelectedNode" @save="handleSave">
+          <template v-if="selectedNode?.type === 'split'">
+            <ConditionBuilder 
+              :available-variables="flowVariables"
+              @update:conditions="updateNodeConditions"
+            />
+          </template>
+          
+          <template v-if="showVariableManager">
+            <VariableManager
+              :initial-variables="flowVariables"
+              @update:variables="updateFlowVariables"
+            />
+          </template>
+        </ConfigPanel>
         <WidgetLibrary v-else-if="showWidgetLibrary" @hide="showWidgetLibrary = false" @add-node="addNewNode" />
       </Transition>
     </div>
