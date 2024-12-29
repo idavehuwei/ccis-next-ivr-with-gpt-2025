@@ -5,6 +5,7 @@ import App from './App.vue'
 import { router } from './router'
 import './style.css'
 import '@vue-flow/core/dist/style.css'
+import '@vue-flow/core/dist/theme-default.css'
 
 // 清除可能存在的旧 token
 localStorage.removeItem('token')
