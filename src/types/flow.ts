@@ -21,8 +21,25 @@ export interface Position {
   }
   
   export interface NodeData {
-    label?: string
+    label: string
+    triggerConfig?: TriggerConfig
     [key: string]: any
+  }
+  
+  export interface TriggerConfig {
+    channel: string
+    conditions: TriggerCondition[]
+    variableMappings: VariableMapping[]
+  }
+  
+  export interface TriggerCondition {
+    type: 'keyword' | 'regex' | 'intent'
+    value: string
+  }
+  
+  export interface VariableMapping {
+    source: string
+    target: string
   }
   
   export interface FlowEdge {

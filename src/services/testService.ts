@@ -1,24 +1,47 @@
 // src/services/testService.ts
-import type { TestCase, TestResults } from '@/types/test'
+import { TriggerService } from './triggerService'
+import type { NodeData, TriggerConfig } from '@/types/flow'
 
-export const testService = {
-  saveTestCase(testCase: TestCase): Promise<void> {
-    // TODO: 实现测试用例保存逻辑
-    return Promise.resolve()
-  },
+export class TestService {
+  static async testTrigger(
+    message: string,
+    nodeData: NodeData
+  ): Promise<boolean> {
+    const config = nodeData.triggerConfig as TriggerConfig
+    
+    if (!config) {
+      return true
+    }
 
-  loadTestCases(): Promise<TestCase[]> {
-    // TODO: 实现测试用例加载逻辑
-    return Promise.resolve([])
-  },
+    // 测试触发条件
+    const conditionsMet = await TriggerService.checkConditions(
+      message,
+      config.conditions
+    )
 
-  saveTestResults(results: TestResults): Promise<void> {
-    // TODO: 实现测试结果保存逻辑
-    return Promise.resolve()
-  },
+    if (!conditionsMet) {
+      return false
+    }
 
-  generateTestReport(results: TestResults[]): string {
-    // TODO: 实现测试报告生成逻辑
-    return ''
+    // 测试变量映射
+    const testInput = {
+      message: {
+        body: message,
+        type: 'text'
+      },
+      contact: {
+        channel: {
+          type: config.channel
+        }
+      }
+    }
+
+    const mappedVars = TriggerService.processVariableMappings(
+      testInput,
+      config.variableMappings
+    )
+
+    // 返回测试结果
+    return Object.keys(mappedVars).length === config.variableMappings.length
   }
 }

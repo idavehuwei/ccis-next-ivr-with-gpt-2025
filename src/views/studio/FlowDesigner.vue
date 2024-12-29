@@ -938,6 +938,24 @@ const updateFlowVariables = (newVariables: any) => {
 
 // 添加变量管理器控制状态
 const showVariableManager = ref(false)
+
+// 注册节点类型
+const registerNodes = () => {
+  // ... 其他节点注册
+  registerNode('trigger', {
+    component: TriggerNode,
+    label: '触发器',
+    category: 'Flow Control',
+    ports: {
+      output: [
+        {
+          id: 'next',
+          label: '下一步'
+        }
+      ]
+    }
+  })
+}
 </script>
 
 
