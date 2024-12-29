@@ -90,7 +90,7 @@
     selectedTemplate.value = template.id
   }
   
-  watch([messageContent, mediaUrls, useQueue, queueDelay, selectedTemplate], () => {
+  const updateData = () => {
     emit('update', {
       ...props.node,
       content: messageContent.value,
@@ -101,7 +101,9 @@
       },
       templateId: selectedTemplate.value
     })
-  })
+  }
+  
+  watch([messageContent, mediaUrls, useQueue, queueDelay, selectedTemplate], updateData)
   
   onMounted(() => {
     if (props.node) {

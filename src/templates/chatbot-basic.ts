@@ -50,6 +50,15 @@ const messageTemplates: MessageTemplate[] = [
     type: 'text',
     category: 'error',
     tags: ['fallback', 'error']
+  },
+  {
+    id: 'order-status',
+    name: 'Order Status Message',
+    content: 'Your order with ID {{order_id}} is currently {{order_status}}.',
+    variables: ['order_id', 'order_status'],
+    type: 'text',
+    category: 'order',
+    tags: ['order', 'status']
   }
 ]
 
@@ -96,7 +105,8 @@ export const basicChatbotTemplate = {
         intents: [
           { name: 'greeting', confidence: '0.7' },
           { name: 'help', confidence: '0.7' },
-          { name: 'goodbye', confidence: '0.7' }
+          { name: 'goodbye', confidence: '0.7' },
+          { name: 'order-status', confidence: '0.7' }
         ]
       }
     },
@@ -127,9 +137,22 @@ export const basicChatbotTemplate = {
       }
     },
     {
-      id: 'msg-goodbye',
+      id: 'msg-order-status',
       type: 'send_message',
       position: { x: 400, y: 400 },
+      data: {
+        label: 'Send Order Status',
+        templateId: 'order-status',
+        queueSettings: {
+          enabled: true,
+          delay: 1
+        }
+      }
+    },
+    {
+      id: 'msg-goodbye',
+      type: 'send_message',
+      position: { x: 550, y: 400 },
       data: {
         label: 'Send Goodbye',
         templateId: 'goodbye',
@@ -142,7 +165,7 @@ export const basicChatbotTemplate = {
     {
       id: 'msg-fallback',
       type: 'send_message',
-      position: { x: 550, y: 400 },
+      position: { x: 700, y: 400 },
       data: {
         label: 'Send Fallback',
         templateId: 'fallback',
@@ -183,12 +206,19 @@ export const basicChatbotTemplate = {
     {
       id: 'e3-6',
       source: 'nlp-1',
+      target: 'msg-order-status',
+      sourceHandle: 'order-status',
+      type: 'smoothstep'
+    },
+    {
+      id: 'e3-7',
+      source: 'nlp-1',
       target: 'msg-goodbye',
       sourceHandle: 'goodbye',
       type: 'smoothstep'
     },
     {
-      id: 'e3-7',
+      id: 'e3-8',
       source: 'nlp-1',
       target: 'msg-fallback',
       sourceHandle: 'fallback',
@@ -210,6 +240,12 @@ export const basicChatbotTemplate = {
         type: 'string',
         value: '',
         description: '订单编号'
+      },
+      {
+        name: 'order_status',
+        type: 'string',
+        value: '',
+        description: '订单状态'
       }
     ]
   }

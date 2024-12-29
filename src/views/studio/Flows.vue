@@ -1,4 +1,4 @@
-# src/views/studio/Flows.vue
+<!-- src/views/studio/Flows.vue -->
 <template>
   <div class="px-8 py-6">
     <div class="flex justify-between items-center mb-6">
@@ -46,9 +46,10 @@
                 </svg>
               </button>
             </div>
-            <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <button @click="openEditor(flow.id)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
               Open Editor
             </button>
+
           </div>
         </div>
       </div>
@@ -66,34 +67,26 @@
 </template>
 
 <script setup lang="ts">
-const flows = [
-  {
-    id: 1,
-    name: 'Customer Support IVR',
-    description: 'Main customer support flow with voice recognition',
-    status: 'Published',
-    lastEdited: '2 hours ago'
-  },
-  {
-    id: 2,
-    name: 'Sales Inquiry Handler',
-    description: 'Route sales inquiries to appropriate department',
-    status: 'Draft',
-    lastEdited: '1 day ago'
-  },
-  {
-    id: 3,
-    name: 'Appointment Scheduler',
-    description: 'Automated appointment booking and reminders',
-    status: 'Published',
-    lastEdited: '3 days ago'
-  },
-  {
-    id: 4,
-    name: 'Survey Flow',
-    description: 'Customer satisfaction survey after call',
-    status: 'Draft',
-    lastEdited: '1 week ago'
+import { ref, onMounted } from 'vue'
+
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+
+const flows = ref([])
+
+
+const openEditor = (flowId: number) => {
+  const uniqueID = Date.now()
+  router.push({ path: `/studio/flows/${uniqueID}/edit` })
+}
+
+onMounted(async () => {
+  const response = await fetch('/api/flows')
+  const result = await response.json()
+  if (result.code === 200) {
+    flows.value = result.data
   }
-]
+})
 </script>

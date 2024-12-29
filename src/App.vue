@@ -10,8 +10,8 @@
     <!-- Sub Navigation -->
     <div class="bg-white border-b h-12 flex items-center px-4">
       <div class="flex space-x-6">
-        <button class="text-blue-600 border-b-2 border-blue-600 h-12 px-2">Develop</button>
-        <button class="text-gray-600 hover:text-gray-800 h-12 px-2">Monitor</button>
+        <button class="text-blue-600 border-b-2 border-blue-600 h-12 px-2" @click="navigateTo('develop')">Develop</button>
+        <button class="text-gray-600 hover:text-gray-800 h-12 px-2" @click="navigateTo('monitor')">Monitor</button>
       </div>
     </div>
 
@@ -30,12 +30,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import TopNav from '@/components/layout/TopNav.vue'
 import SideNav from '@/components/layout/SideNav.vue'
 
 const route = useRoute()
+const router = useRouter()
 const isLoginPage = computed(() => route.name === 'Login')
+
+const navigateTo = (section: string) => {
+  router.push({ name: section === 'develop' ? 'Develop' : 'Monitor' })
+}
 </script>
 
 <style>

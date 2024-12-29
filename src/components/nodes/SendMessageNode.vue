@@ -32,13 +32,15 @@ const selectedTemplate = ref('')
 const messageContent = ref('')
 const templates = computed(() => messageStore.templates)
 
-watch([messageContent, selectedTemplate], () => {
+const updateData = () => {
   emit('update', {
     ...props.data,
     content: messageContent.value,
     templateId: selectedTemplate.value
   })
-})
+}
+
+watch([messageContent, selectedTemplate], updateData)
 
 onMounted(() => {
   if (props.data) {

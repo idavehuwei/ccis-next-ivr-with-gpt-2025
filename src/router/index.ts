@@ -18,7 +18,16 @@ import FlowDesigner from '../views/studio/FlowDesigner.vue'
 import Voice from '../views/voice/Voice.vue'
 import LoginView from '../views/LoginView.vue'
 
+import Develop from '../views/Home.vue'
+import MonitorView from '../views/MonitorView.vue'
+
+
 const routes = [
+
+  { path: '/', name: 'Login', component: LoginView },
+  { path: '/develop', name: 'Develop', component: Develop },
+  { path: '/monitor', name: 'Monitor', component: MonitorView },
+
   {
     path: '/login',
     name: 'Login',
