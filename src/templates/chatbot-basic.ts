@@ -82,54 +82,6 @@ const messageTemplates: MessageTemplate[] = [
   }
 ]
 
-// 可复用的基础节点配置
-const baseNodes = {
-  trigger: {
-    id: 'trigger-1',
-    type: 'trigger',
-    position: { x: 250, y: 50 },
-    data: {
-      label: 'Message Trigger',
-      triggerType: 'incoming_message'
-    }
-  },
-  setVars: {
-    id: 'set-vars',
-    type: 'set_variables',
-    position: { x: 250, y: 150 },
-    data: {
-      label: 'Set Initial Variables',
-      variables: [
-        {
-          name: 'customer_name',
-          value: '{{contact.name}}',
-          type: 'string'
-        },
-        {
-          name: 'order_id',
-          value: '{{contact.last_order_id}}',
-          type: 'string'
-        }
-      ]
-    }
-  },
-  nlpIntent: {
-    id: 'nlp-1',
-    type: 'nlp_intent',
-    position: { x: 250, y: 250 },
-    data: {
-      label: 'Classify Intent',
-      service: 'dialogflow',
-      intents: [
-        { name: 'greeting', confidence: '0.7' },
-        { name: 'help', confidence: '0.7' },
-        { name: 'goodbye', confidence: '0.7' },
-        { name: 'order-status', confidence: '0.7' }
-      ]
-    }
-  }
-}
-
 // 更新后的流程定义
 const flow = {
   flags: {
@@ -143,7 +95,8 @@ const flow = {
       properties: {},
       transitions: [
         { event: "incomingMessage", next: "greet" }
-      ]
+      ],
+      position: { x: 250, y: 50 } // 调整位置
     },
     {
       name: "greet",
@@ -153,7 +106,8 @@ const flow = {
       },
       transitions: [
         { event: "audioComplete", next: "collect_name" }
-      ]
+      ],
+      position: { x: 250, y: 150 } // 调整位置
     },
     {
       name: "collect_name",
@@ -164,7 +118,8 @@ const flow = {
       },
       transitions: [
         { event: "inputReceived", next: "farewell" }
-      ]
+      ],
+      position: { x: 250, y: 250 } // 调整位置
     },
     {
       name: "farewell",
@@ -173,8 +128,16 @@ const flow = {
         say: "Thanks for chatting!"
       },
       transitions: [
-        { event: "audioComplete" }
-      ]
+        { event: "audioComplete", next: "end" }
+      ],
+      position: { x: 250, y: 350 } // 调整位置
+    },
+    {
+      name: "end",
+      type: "end",
+      properties: {},
+      transitions: [], // 结束状态，没有后续状态
+      position: { x: 250, y: 450 } // 调整位置
     }
   ],
   initial_state: "Trigger"
@@ -189,9 +152,15 @@ export const smsTemplate = {
   name: 'SMS Chatbot',
   description: 'Have a conversation with your customers using both inbound and outbound SMS.',
   nodes: [
-    baseNodes.trigger,
-    baseNodes.setVars,
-    baseNodes.nlpIntent,
+    {
+      id: 'trigger-1',
+      type: 'trigger',
+      position: { x: 250, y: 50 },
+      data: {
+        label: 'Message Trigger',
+        triggerType: 'incoming_message'
+      }
+    },
     {
       id: 'msg-greeting',
       type: 'send_message',
@@ -224,11 +193,9 @@ export const smsTemplate = {
     }
   ],
   edges: [
-    { id: 'e1-2', source: 'trigger-1', target: 'set-vars', type: 'smoothstep' },
-    { id: 'e2-3', source: 'set-vars', target: 'nlp-1', type: 'smoothstep' },
-    { id: 'e3-4', source: 'nlp-1', target: 'msg-greeting', sourceHandle: 'greeting', type: 'smoothstep' },
-    { id: 'e3-5', source: 'nlp-1', target: 'msg-help', sourceHandle: 'help', type: 'smoothstep' },
-    { id: 'e3-6', source: 'nlp-1', target: 'msg-fallback', sourceHandle: 'fallback', type: 'smoothstep' }
+    { id: 'e1-2', source: 'trigger-1', target: 'msg-greeting', type: 'smoothstep' },
+    { id: 'e2-3', source: 'msg-greeting', target: 'msg-help', type: 'smoothstep' },
+    { id: 'e3-4', source: 'msg-greeting', target: 'msg-fallback', type: 'smoothstep' }
   ],
   initData: {
     templates: messageTemplates,
@@ -253,7 +220,15 @@ export const appointmentTemplate = {
   name: 'Appointment Reminders',
   description: 'Reduce no-shows by sending confirmation messages.',
   nodes: [
-    baseNodes.trigger,
+    {
+      id: 'trigger-1',
+      type: 'trigger',
+      position: { x: 250, y: 50 },
+      data: {
+        label: 'Appointment Trigger',
+        triggerType: 'incoming_message'
+      }
+    },
     {
       id: 'set-appointment-vars',
       type: 'set_variables',
@@ -452,7 +427,15 @@ export const scratchTemplate = {
   name: 'Start from scratch',
   description: 'Start building from scratch.',
   nodes: [
-    baseNodes.trigger
+    {
+      id: 'trigger-1',
+      type: 'trigger',
+      position: { x: 250, y: 50 },
+      data: {
+        label: 'Start Trigger',
+        triggerType: 'incoming_message'
+      }
+    }
   ],
   edges: [],
   initData: {
