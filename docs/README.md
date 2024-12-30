@@ -1,82 +1,166 @@
-// docs/README.md
-# Flow System Documentation
+# 项目名称
 
-## Overview
-The Flow System is a flexible and extensible workflow engine that allows you to define, execute, and manage complex flows. It supports multiple state types, conditional transitions, and async execution.
+## 概述
+本项目是一个基于新的流程引擎的聊天机器人系统，允许用户定义、执行和管理复杂的工作流。该系统支持多种状态类型、条件转换以及异步执行，旨在提供灵活且可扩展的工作流解决方案。
 
-## Quick Start
+## 特性
+- 定义和管理复杂的工作流
+- 支持多种状态类型（如触发器、文本转语音、用户输入收集等）
+- 异步执行和状态转换
+- RESTful API 接口
 
-```typescript
-import { FlowStore, FlowExecutor, createFlowRouter } from 'flow-system';
+## 快速开始
 
-// Initialize the system
-const flowStore = new FlowStore();
-const flowExecutor = new FlowExecutor(flowStore);
+### 安装
+首先，确保您已安装 [Node.js](https://nodejs.org/) 和 [npm](https://www.npmjs.com/)。然后，克隆此项目并安装依赖项：
 
-// Create a simple flow
-const flow = {
-  flags: { allow_concurrent_calls: true },
-  description: "Hello World Flow",
-  states: [
-    {
-      name: "Trigger",
-      type: "trigger",
-      properties: {},
-      transitions: [{ event: "incomingMessage", next: "say_hello" }]
+```bash
+git clone https://github.com/your-repo/project-name.git
+cd project-name
+npm install
+```
+
+### 使用
+启动服务器：
+
+```bash
+npm start
+```
+
+服务器启动后，您可以通过访问 `http://localhost:3000` 来使用 API。
+
+## API 参考
+
+### 创建流程
+- **POST** `/flows/:flowId`
+- **请求体**:
+  ```json
+  {
+    "definition": {
+      "flags": {
+        "allow_concurrent_calls": true
+      },
+      "description": "流程描述",
+      "states": [
+        {
+          "name": "Trigger",
+          "type": "trigger",
+          "properties": {},
+          "transitions": [
+            { "event": "incomingMessage", "next": "greet" }
+          ]
+        },
+        {
+          "name": "greet",
+          "type": "say-play",
+          "properties": {
+            "say": "欢迎使用聊天机器人！"
+          },
+          "transitions": [
+            { "event": "audioComplete", "next": "collect_name" }
+          ]
+        }
+      ],
+      "initial_state": "Trigger"
     },
-    {
-      name: "say_hello",
-      type: "say-play",
-      properties: { say: "Hello World" },
-      transitions: [{ event: "audioComplete" }]
-    }
-  ],
-  initial_state: "Trigger"
-};
-
-// Create and execute the flow
-await flowStore.createFlow('hello-world', flow);
-await flowExecutor.executeFlow('hello-world');
-```
-
-## API Reference
-
-### Flow Definition
-- `flags`: Optional configuration flags
-- `description`: Flow description
-- `states`: Array of state definitions
-- `initial_state`: Name of the starting state
-
-### State Types
-1. `trigger`: Entry point state
-2. `say-play`: Text-to-speech or audio playback
-3. `gather-input`: User input collection
-4. `http-request`: External API calls
-
-### REST API Endpoints
-- POST /flows/:flowId - Create flow
-- PUT /flows/:flowId - Update flow
-- GET /flows/:flowId - Get flow
-- DELETE /flows/:flowId - Delete flow
-- POST /flows/:flowId/execute - Execute flow
-- GET /flows/:flowId/status - Get execution status
-
-## Configuration Guide
-
-### Environment Variables
-```env
-FLOW_EXECUTION_TIMEOUT=30000
-FLOW_MAX_CONCURRENT_EXECUTIONS=5
-FLOW_STORAGE_TYPE=memory
-```
-
-### Custom State Handlers
-```typescript
-class CustomStateHandler extends BaseStateHandler {
-  readonly type = 'custom';
-  
-  async execute(state: FlowState, context: ExecutionContext): Promise<ExecutionResult> {
-    // Implementation
+    "commitMessage": "创建流程",
+    "status": "draft"
   }
-}
-```
+  ```
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "data": { /* 创建的流程 */ }
+  }
+  ```
+
+### 更新流程
+- **PUT** `/flows/:flowId`
+- **请求体**:
+  ```json
+  {
+    "definition": { /* 更新后的流程定义 */ },
+    "commitMessage": "更新流程",
+    "status": "draft"
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "data": { /* 更新后的流程 */ }
+  }
+  ```
+
+### 获取流程
+- **GET** `/flows/:flowId`
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "data": { /* 流程定义 */ }
+  }
+  ```
+
+### 删除流程
+- **DELETE** `/flows/:flowId`
+- **响应**:
+  ```json
+  {
+    "success": true
+  }
+  ```
+
+### 列出所有流程
+- **GET** `/flows`
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "data": [ /* 流程列表 */ ]
+  }
+  ```
+
+### 执行流程
+- **POST** `/flows/:flowId/execute`
+- **请求体**:
+  ```json
+  {
+    "variables": { /* 初始变量 */ },
+    "triggerEvent": "incomingMessage"
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "executionId": "flowId",
+      "status": "started"
+    }
+  }
+  ```
+
+### 获取执行状态
+- **GET** `/flows/:flowId/status`
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "executionId": "flowId",
+      "status": "running", // 或 "completed"
+      "context": { /* 执行上下文 */ }
+    }
+  }
+  ```
+
+## 文档
+确保所有开发人员都能理解新的逻辑和实现，详细描述每个模块的功能和使用方法。
+
+## 贡献
+欢迎任何形式的贡献！请提交问题或拉取请求。
+
+## 许可证
+本项目采用 MIT 许可证，详细信息请参见 LICENSE 文件。

@@ -130,6 +130,59 @@ const baseNodes = {
   }
 }
 
+// 更新后的流程定义
+const flow = {
+  flags: {
+    allow_concurrent_calls: true
+  },
+  description: "Chatbot Basic Flow",
+  states: [
+    {
+      name: "Trigger",
+      type: "trigger",
+      properties: {},
+      transitions: [
+        { event: "incomingMessage", next: "greet" }
+      ]
+    },
+    {
+      name: "greet",
+      type: "say-play",
+      properties: {
+        say: "Welcome to the chatbot!"
+      },
+      transitions: [
+        { event: "audioComplete", next: "collect_name" }
+      ]
+    },
+    {
+      name: "collect_name",
+      type: "gather-input",
+      properties: {
+        prompt: "What's your name?",
+        timeout: 5000
+      },
+      transitions: [
+        { event: "inputReceived", next: "farewell" }
+      ]
+    },
+    {
+      name: "farewell",
+      type: "say-play",
+      properties: {
+        say: "Thanks for chatting!"
+      },
+      transitions: [
+        { event: "audioComplete" }
+      ]
+    }
+  ],
+  initial_state: "Trigger"
+};
+
+// 导出流程
+export const chatbotFlow = flow;
+
 // SMS模板 (使用原有的basicChatbotTemplate并扩展)
 export const smsTemplate = {
   id: 'sms',

@@ -1,9 +1,7 @@
 // src/services/flowExecutor.ts
 import { EventEmitter } from 'eventemitter3';
- 
 import { getHandler } from '../handlers';
 import { FLOW_CONSTANTS } from '../config/constants';
-
 import { FlowStore } from '@/stores';
 import { FlowNotFoundError, FlowExecutionError } from '@/types/errors';
 import { ExecutionContext, FlowState, ExecutionResult, FlowDefinition } from '@/types/flow';
@@ -40,26 +38,26 @@ export class FlowExecutor extends EventEmitter {
     initialVariables: Record<string, any> = {}
   ): Promise<ExecutionContext> {
     try {
-      // Get flow definition
+      // 获取流程定义
       const flow = await this.flowStore.getFlow(flowId);
       if (!flow) {
         throw new FlowNotFoundError(flowId);
       }
 
-      // Check if flow is already executing
+      // 检查流程是否已经在执行
       if (this.activeExecutions.has(flowId)) {
         throw new FlowExecutionError('Flow is already executing');
       }
 
-      // Initialize execution context
+      // 初始化执行上下文
       const context: ExecutionContext = {
         flowId,
         stateData: {},
-        variables: initialVariables,
+        variables: initialVariables, // 使用传入的初始变量
         messageHistory: []
       };
 
-      // Set up execution timeout
+      // 设置执行超时
       const timeout = setTimeout(() => {
         this.handleExecutionTimeout(flowId);
       }, FLOW_CONSTANTS.EXECUTION_TIMEOUT);
@@ -67,13 +65,13 @@ export class FlowExecutor extends EventEmitter {
       this.executionTimeouts.set(flowId, timeout);
       this.activeExecutions.set(flowId, context);
 
-      // Mark flow as executing in store
+      // 在 store 中标记流程为正在执行
       await this.flowStore.markFlowAsExecuting(flowId);
 
-      // Emit execution started event
+      // 触发执行开始事件
       this.emit('execution:started', flowId, context);
 
-      // Start execution from initial state
+      // 从初始状态开始执行
       await this.executeState(flow, flow.initial_state, context);
 
       return context;
@@ -94,31 +92,31 @@ export class FlowExecutor extends EventEmitter {
     }
 
     try {
-      // Emit state entered event
+      // 触发状态进入事件
       this.emit('state:entered', context.flowId, state);
 
-      // Get handler for state type
+      // 获取状态类型的处理器
       const handler = getHandler(state.type);
       if (!handler) {
         throw new FlowExecutionError(`No handler found for state type: ${state.type}`);
       }
 
-      // Execute state
+      // 执行状态
       const result = await handler.execute(state, context);
 
-      // Store state execution result in context
+      // 将状态执行结果存储在上下文中
       context.stateData[state.name] = result.data;
 
-      // Emit state completed event
+      // 触发状态完成事件
       this.emit('state:completed', context.flowId, state, result);
 
-      // Find next state based on result
+      // 根据结果查找下一个状态
       const transition = state.transitions.find(t => t.event === result.event);
       if (transition && transition.next) {
-        // Execute next state
+        // 执行下一个状态
         await this.executeState(flow, transition.next, context);
       } else {
-        // No more states to execute
+        // 没有更多状态可执行
         await this.completeExecution(context.flowId);
       }
     } catch (error) {
@@ -133,20 +131,20 @@ export class FlowExecutor extends EventEmitter {
       return;
     }
 
-    // Clear timeout
+    // 清除超时
     const timeout = this.executionTimeouts.get(flowId);
     if (timeout) {
       clearTimeout(timeout);
       this.executionTimeouts.delete(flowId);
     }
 
-    // Remove from active executions
+    // 从活动执行中移除
     this.activeExecutions.delete(flowId);
 
-    // Mark flow as completed in store
+    // 在 store 中标记流程为已完成
     await this.flowStore.markFlowAsCompleted(flowId);
 
-    // Emit execution completed event
+    // 触发执行完成事件
     this.emit('execution:completed', flowId, context);
   }
 
@@ -156,14 +154,14 @@ export class FlowExecutor extends EventEmitter {
     this.completeExecution(flowId).catch(console.error);
   }
 
-  // Utility methods
+  // 实用方法
   async pauseExecution(flowId: string): Promise<void> {
-    // Implementation for pausing flow execution
+    // 暂停流程执行的实现
     throw new Error('Not implemented');
   }
 
   async resumeExecution(flowId: string): Promise<void> {
-    // Implementation for resuming flow execution
+    // 恢复流程执行的实现
     throw new Error('Not implemented');
   }
 
@@ -179,5 +177,3 @@ export class FlowExecutor extends EventEmitter {
     return this.activeExecutions.has(flowId);
   }
 }
-
- 

@@ -1,6 +1,5 @@
 // src/api/flowController.ts
 import { Request, Response } from 'express';
- 
 import { FlowExecutor } from '../services/flowExecutor';
 import { FlowValidator } from '../utils/validation';
 import { CreateFlowRequest, UpdateFlowRequest, ExecuteFlowRequest } from './types';
@@ -9,23 +8,24 @@ import { FlowStore } from '@/stores/flow';
 
 export class FlowController {
   constructor(
-    private readonly flowStore: FlowStore,
-    private readonly flowExecutor: FlowExecutor
+    private readonly flowStore: FlowStore, // 流程存储
+    private readonly flowExecutor: FlowExecutor // 流程执行器
   ) {}
 
+  // 创建流程
   async createFlow(req: Request, res: Response): Promise<void> {
     try {
       const { definition, commitMessage, status } = req.body as CreateFlowRequest;
       const flowId = req.params.flowId;
 
-      // Validate flow definition
+      // 验证流程定义
       FlowValidator.validateFlow(definition);
 
-      // Create flow
+      // 创建流程
       const flow = await this.flowStore.createFlow(flowId, {
         ...definition,
         metadata: {
-          status: status || 'draft',
+          status: status || 'draft', // 默认状态为草稿
           commitMessage
         }
       });
@@ -35,23 +35,24 @@ export class FlowController {
         data: flow
       });
     } catch (error) {
-      this.handleError(res, error);
+      this.handleError(res, error); // 处理错误
     }
   }
 
+  // 更新流程
   async updateFlow(req: Request, res: Response): Promise<void> {
     try {
       const { definition, commitMessage, status } = req.body as UpdateFlowRequest;
       const flowId = req.params.flowId;
 
-      // Validate flow definition
+      // 验证流程定义
       FlowValidator.validateFlow(definition);
 
-      // Update flow
+      // 更新流程
       const flow = await this.flowStore.updateFlow(flowId, {
         ...definition,
         metadata: {
-          status: status || 'draft',
+          status: status || 'draft', // 默认状态为草稿
           commitMessage
         }
       });
@@ -61,10 +62,11 @@ export class FlowController {
         data: flow
       });
     } catch (error) {
-      this.handleError(res, error);
+      this.handleError(res, error); // 处理错误
     }
   }
 
+  // 获取流程
   async getFlow(req: Request, res: Response): Promise<void> {
     try {
       const flowId = req.params.flowId;
@@ -75,10 +77,11 @@ export class FlowController {
         data: flow
       });
     } catch (error) {
-      this.handleError(res, error);
+      this.handleError(res, error); // 处理错误
     }
   }
 
+  // 删除流程
   async deleteFlow(req: Request, res: Response): Promise<void> {
     try {
       const flowId = req.params.flowId;
@@ -88,10 +91,11 @@ export class FlowController {
         success: true
       });
     } catch (error) {
-      this.handleError(res, error);
+      this.handleError(res, error); // 处理错误
     }
   }
 
+  // 列出所有流程
   async listFlows(req: Request, res: Response): Promise<void> {
     try {
       const flows = await this.flowStore.listFlows();
@@ -101,10 +105,11 @@ export class FlowController {
         data: flows
       });
     } catch (error) {
-      this.handleError(res, error);
+      this.handleError(res, error); // 处理错误
     }
   }
 
+  // 执行流程
   async executeFlow(req: Request, res: Response): Promise<void> {
     try {
       const flowId = req.params.flowId;
@@ -112,21 +117,22 @@ export class FlowController {
 
       const context = await this.flowExecutor.executeFlow(flowId, {
         ...variables,
-        triggerEvent
+        triggerEvent // 传入触发事件
       });
 
       res.json({
         success: true,
         data: {
           executionId: context.flowId,
-          status: 'started'
+          status: 'started' // 状态为已启动
         }
       });
     } catch (error) {
-      this.handleError(res, error);
+      this.handleError(res, error); // 处理错误
     }
   }
 
+  // 获取执行状态
   async getExecutionStatus(req: Request, res: Response): Promise<void> {
     try {
       const flowId = req.params.flowId;
@@ -140,15 +146,16 @@ export class FlowController {
         success: true,
         data: {
           executionId: context.flowId,
-          status: this.flowExecutor.isExecuting(flowId) ? 'running' : 'completed',
+          status: this.flowExecutor.isExecuting(flowId) ? 'running' : 'completed', // 根据执行状态返回
           context
         }
       });
     } catch (error) {
-      this.handleError(res, error);
+      this.handleError(res, error); // 处理错误
     }
   }
 
+  // 处理错误
   private handleError(res: Response, error: any): void {
     if (error instanceof FlowNotFoundError) {
       res.status(404).json({

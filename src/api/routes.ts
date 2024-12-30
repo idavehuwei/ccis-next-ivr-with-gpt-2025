@@ -1,7 +1,7 @@
 // src/api/routes.ts
 import { Router } from 'express';
 import { FlowController } from './flowController';
-import { FlowStore } from '../store/flowStore';
+import { FlowStore } from '../stores/flow';
 import { FlowExecutor } from '../services/flowExecutor';
 
 export function createFlowRouter(): Router {
