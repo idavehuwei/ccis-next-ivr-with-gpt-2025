@@ -1,220 +1,282 @@
-<!-- src/components/nodes/CollectInputNode.vue -->
+// src/components/nodes/SplitOnIntentNode.vue
 <template>
-    <div class="relative">
-      <div class="bg-white rounded-lg min-w-[300px] border-2" 
-           :class="{ 'border-green-500 ring-2 ring-green-500': isSelected, 'border-gray-200': !isSelected }">
-        <!-- Header -->
-        <div class="bg-green-500 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M8 9l4-4 4 4m0 6l-4 4-4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="font-medium text-base">{{ data.label || 'Collect Input' }}</span>
-          </div>
+  <BaseNode
+    type="split_intent"
+    :title="nodeData.label"
+    :is-selected="isSelected"
+    :is-executing="isExecuting"
+    :has-error="hasError"
+  >
+    <template #icon>
+      <GitBranchIcon class="w-5 h-5 text-purple-500" />
+    </template>
+
+    <template #default>
+      <div class="p-4 space-y-4">
+        <!-- NLP Service -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">NLP Service</label>
+          <select
+            v-model="nodeData.service"
+            class="mt-1 w-full rounded-md border-gray-300"
+            @change="handleUpdate"
+          >
+            <option value="dialogflow">Dialogflow</option>
+            <option value="lex">Amazon Lex</option>
+            <option value="luis">LUIS</option>
+            <option value="custom">Custom Endpoint</option>
+          </select>
         </div>
-  
-        <!-- Content -->
-        <div class="p-4">
-          <div class="space-y-4">
-            <!-- Prompt Message -->
-            <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">PROMPT</label>
-              <textarea
-                v-model="data.prompt"
-                rows="3"
-                class="w-full px-3 py-2 border rounded text-sm"
-                placeholder="Enter your prompt message..."
-                @change="updateNode"
-              ></textarea>
-            </div>
-  
-            <!-- Input Settings -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">VALIDATION TYPE</label>
-                <select
-                  v-model="data.validationType"
-                  class="w-full px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                >
-                  <option value="any">Any Input</option>
-                  <option value="number">Number</option>
-                  <option value="email">Email</option>
-                  <option value="date">Date</option>
-                  <option value="custom">Custom Pattern</option>
-                </select>
-              </div>
-  
-              <div v-if="data.validationType === 'custom'">
-                <label class="block text-xs font-medium text-gray-500 mb-1">PATTERN</label>
-                <input
-                  type="text"
-                  v-model="data.pattern"
-                  placeholder="Regular expression"
-                  class="w-full px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                />
-              </div>
-            </div>
-  
-            <!-- Timeout Settings -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">TIMEOUT (SEC)</label>
-                <input
-                  type="number"
-                  v-model.number="data.timeout"
-                  min="1"
-                  max="300"
-                  class="w-full px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">MAX ATTEMPTS</label>
-                <input
-                  type="number"
-                  v-model.number="data.maxAttempts"
-                  min="1"
-                  max="5"
-                  class="w-full px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                />
-              </div>
-            </div>
-  
-            <!-- Validation Messages -->
-            <div class="space-y-2">
-              <label class="block text-xs font-medium text-gray-500">ERROR MESSAGES</label>
-              <div>
-                <label class="block text-xs text-gray-500 mb-1">Invalid Input</label>
-                <input
-                  type="text"
-                  v-model="data.messages.invalid"
-                  class="w-full px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                />
-              </div>
-              <div>
-                <label class="block text-xs text-gray-500 mb-1">Timeout</label>
-                <input
-                  type="text"
-                  v-model="data.messages.timeout"
-                  class="w-full px-3 py-2 border rounded text-sm"
-                  @change="updateNode"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Connection Points -->
-      <Handle
-        type="target"
-        :position="Position.Top"
-        class="w-3 h-3 !bg-green-500"
-      />
-      
-      <!-- Output Handles -->
-      <div class="flex justify-around mt-3">
-        <div v-for="output in outputs" :key="output.id" 
-             class="flex flex-col items-center">
-          <Handle
-            type="source"
-            :position="Position.Bottom"
-            :id="output.id"
-            class="w-3 h-3 !bg-green-500 cursor-pointer hover:scale-110 transition-transform"
+
+        <!-- Custom Endpoint -->
+        <div v-if="nodeData.service === 'custom'">
+          <label class="block text-sm font-medium text-gray-700">Endpoint URL</label>
+          <input
+            type="url"
+            v-model="nodeData.endpointUrl"
+            class="mt-1 w-full rounded-md border-gray-300"
+            @change="handleUpdate"
           />
-          <span class="mt-1 text-xs text-gray-500 px-2 py-0.5 rounded"
-                :class="output.class">
-            {{ output.label }}
-          </span>
+        </div>
+
+        <!-- Intents -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-sm font-medium text-gray-700">Intents</label>
+            <button
+              @click="addIntent"
+              class="text-sm text-purple-600 hover:text-purple-700"
+            >
+              Add Intent
+            </button>
+          </div>
+          
+          <div class="space-y-2">
+            <div
+              v-for="(intent, index) in nodeData.intents"
+              :key="index"
+              class="p-3 border rounded-lg bg-gray-50 space-y-2"
+            >
+              <!-- Intent Name -->
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model="intent.name"
+                  type="text"
+                  class="rounded-md border-gray-300"
+                  placeholder="Intent name"
+                  @change="handleUpdate"
+                />
+                <input
+                  v-model="intent.confidence"
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  class="rounded-md border-gray-300"
+                  placeholder="Min confidence"
+                  @change="handleUpdate"
+                />
+              </div>
+
+              <!-- Training Phrases -->
+              <div class="space-y-1">
+                <div
+                  v-for="(phrase, pIndex) in intent.trainingPhrases"
+                  :key="pIndex"
+                  class="flex items-center gap-2"
+                >
+                  <input
+                    v-model="intent.trainingPhrases[pIndex]"
+                    type="text"
+                    class="flex-1 rounded-md border-gray-300 text-sm"
+                    placeholder="Training phrase"
+                    @change="handleUpdate"
+                  />
+                  <button
+                    @click="removePhrase(index, pIndex)"
+                    class="text-red-500 hover:text-red-700"
+                  >
+                    <XIcon class="w-4 h-4" />
+                  </button>
+                </div>
+                <button
+                  @click="addPhrase(index)"
+                  class="text-sm text-purple-600 hover:text-purple-700"
+                >
+                  Add Phrase
+                </button>
+              </div>
+
+              <!-- Remove Intent -->
+              <button
+                @click="removeIntent(index)"
+                class="text-red-500 hover:text-red-700 w-full text-center pt-2 border-t"
+              >
+                Remove Intent
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fallback Settings -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Fallback Handling</label>
+          <select
+            v-model="nodeData.fallbackMode"
+            class="mt-1 w-full rounded-md border-gray-300"
+            @change="handleUpdate"
+          >
+            <option value="default">Use Default Output</option>
+            <option value="retry">Retry With Prompt</option>
+            <option value="skip">Skip (Continue Flow)</option>
+          </select>
+
+          <div v-if="nodeData.fallbackMode === 'retry'" class="mt-2">
+            <input
+              v-model="nodeData.fallbackPrompt"
+              type="text"
+              class="w-full rounded-md border-gray-300"
+              placeholder="Retry prompt message..."
+              @change="handleUpdate"
+            />
+          </div>
         </div>
       </div>
-    </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { ref, watch } from 'vue'
-  import { Handle, Position } from '@vue-flow/core'
-  
-  const props = defineProps<{
-    id: string
-    data: {
-      label?: string
-      prompt?: string
-      validationType?: 'any' | 'number' | 'email' | 'date' | 'custom'
-      pattern?: string
-      timeout?: number
-      maxAttempts?: number
-      messages?: {
-        invalid: string
-        timeout: string
-      }
+    </template>
+
+    <template #handles>
+      <!-- Dynamic Intent Handles -->
+      <div 
+        v-for="intent in nodeData.intents"
+        :key="intent.name"
+        class="handle-wrapper"
+      >
+        <Handle
+          type="source"
+          :position="Position.Right"
+          :id="intent.name"
+          class="handle-intent"
+        >
+          <span class="handle-label">{{ intent.name }}</span>
+        </Handle>
+      </div>
+      <!-- Fallback Handle -->
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="fallback"
+        class="handle-warning"
+      >
+        <span class="handle-label">Fallback</span>
+      </Handle>
+    </template>
+  </BaseNode>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Handle, Position } from '@vue-flow/core'
+import { GitBranch, X } from 'lucide-vue-next'
+import BaseNode from './BaseNode.vue'
+
+const props = defineProps<{
+  id: string
+  data: any
+  isSelected?: boolean
+}>()
+
+const emit = defineEmits(['update'])
+
+const nodeData = ref({
+  label: props.data.label || 'Split on Intent',
+  service: props.data.service || 'dialogflow',
+  endpointUrl: props.data.endpointUrl || '',
+  intents: props.data.intents || [],
+  fallbackMode: props.data.fallbackMode || 'default',
+  fallbackPrompt: props.data.fallbackPrompt || ''
+})
+
+const isExecuting = ref(false)
+const hasError = ref(false)
+
+// Intent Management
+const addIntent = () => {
+  nodeData.value.intents.push({
+    name: '',
+    confidence: 0.7,
+    trainingPhrases: []
+  })
+  handleUpdate()
+}
+
+const removeIntent = (index: number) => {
+  nodeData.value.intents.splice(index, 1)
+  handleUpdate()
+}
+
+const addPhrase = (intentIndex: number) => {
+  nodeData.value.intents[intentIndex].trainingPhrases.push('')
+  handleUpdate()
+}
+
+const removePhrase = (intentIndex: number, phraseIndex: number) => {
+  nodeData.value.intents[intentIndex].trainingPhrases.splice(phraseIndex, 1)
+  handleUpdate()
+}
+
+const handleUpdate = () => {
+  emit('update', {
+    ...props.data,
+    ...nodeData.value
+  })
+}
+
+// Flow State Conversion
+const toFlowState = () => ({
+  name: props.id,
+  type: 'split_intent',
+  properties: {
+    service: nodeData.value.service,
+    endpointUrl: nodeData.value.service === 'custom' ? nodeData.value.endpointUrl : undefined,
+    intents: nodeData.value.intents,
+    fallback: {
+      mode: nodeData.value.fallbackMode,
+      prompt: nodeData.value.fallbackPrompt
     }
-    isSelected?: boolean
-  }>()
-  
-  const emit = defineEmits<{
-    (e: 'update', id: string, data: any): void
-  }>()
-  
-  // 默认值
-  const defaultData = {
-    label: 'Collect Input',
-    prompt: 'Please provide your input:',
-    validationType: 'any',
-    pattern: '',
-    timeout: 60,
-    maxAttempts: 3,
-    messages: {
-      invalid: 'Invalid input. Please try again.',
-      timeout: 'Time out. Please try again.'
-    }
-  }
-  
-  // 输出连接点配置
-  const outputs = [
-    { 
-      id: 'valid', 
-      label: 'Valid Input',
-      class: 'bg-green-100 text-green-700'
-    },
-    { 
-      id: 'invalid', 
-      label: 'Invalid',
-      class: 'bg-yellow-100 text-yellow-700'
-    },
-    { 
-      id: 'timeout', 
-      label: 'Timeout',
-      class: 'bg-red-100 text-red-700'
-    },
-    { 
-      id: 'max_attempts', 
-      label: 'Max Attempts',
-      class: 'bg-purple-100 text-purple-700'
-    }
+  },
+  transitions: [
+    ...nodeData.value.intents.map(intent => ({
+      event: intent.name,
+      next: undefined,
+      conditions: [{
+        type: 'intent',
+        intentName: intent.name,
+        confidence: intent.confidence
+      }]
+    })),
+    { event: 'fallback', next: undefined }
   ]
-  
-  // 使用ref来存储节点数据
-  const nodeData = ref({...defaultData})
-  
-  // 监听props.data的变化
-  watch(() => props.data, (newData) => {
-    nodeData.value = {
-      ...defaultData,
-      ...newData,
-      messages: {
-        ...defaultData.messages,
-        ...newData?.messages
-      }
-    }
-  }, { immediate: true, deep: true })
-  
-  // 更新节点数据
-  const updateNode = () => {
-    emit('update', props.id, nodeData.value)
-  }
-  </script>
+})
+
+defineExpose({
+  getIntentAnalysis: () => ({
+    isAnalyzing: isExecuting.value,
+    hasError: hasError.value,
+    lastDetectedIntent: null // 实际实现中需要跟踪最后检测到的意图
+  })
+})
+</script>
+
+<style scoped>
+.handle-intent {
+  @apply bg-purple-500;
+}
+
+.handle-warning {
+  @apply bg-yellow-500;
+}
+
+.handle-wrapper {
+  @apply my-2;
+}
+</style>

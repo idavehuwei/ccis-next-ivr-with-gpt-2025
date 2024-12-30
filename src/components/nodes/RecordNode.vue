@@ -219,3 +219,125 @@
   </BaseNode>
 </template>
 
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Handle, Position } from '@vue-flow/core'
+import { Mic } from 'lucide-vue-next'
+import BaseNode from './BaseNode.vue'
+
+const props = defineProps<{
+  id: string
+  data: any
+  isSelected?: boolean
+}>()
+
+const emit = defineEmits(['update'])
+
+const recordTypes = [
+  { value: 'audio', label: 'Audio Only' },
+  { value: 'transcription', label: 'With Transcription' }
+]
+
+const languages = [
+  { code: 'en-US', name: 'English (US)' },
+  { code: 'es-ES', name: 'Spanish (Spain)' },
+  { code: 'fr-FR', name: 'French' },
+  { code: 'de-DE', name: 'German' },
+  { code: 'ja-JP', name: 'Japanese' },
+  { code: 'zh-CN', name: 'Chinese' }
+]
+
+const nodeData = ref({
+  label: props.data.label || 'Record',
+  recordType: props.data.recordType || 'audio',
+  startAction: props.data.startAction || 'immediate',
+  startMessage: props.data.startMessage || '',
+  channels: props.data.channels || 'mono',
+  maxDuration: props.data.maxDuration || 300,
+  maxSilence: props.data.maxSilence || 5,
+  playBeep: props.data.playBeep || false,
+  trimSilence: props.data.trimSilence || false,
+  
+  transcriptionLanguage: props.data.transcriptionLanguage || 'en-US',
+  transcriptionModel: props.data.transcriptionModel || 'base',
+  transcriptionOptions: props.data.transcriptionOptions || {
+    enablePunctuation: true,
+    enableSpeakerDiarization: false
+  }
+})
+
+const isExecuting = ref(false)
+const hasError = ref(false)
+const isRecording = ref(false)
+
+const selectRecordType = (type: string) => {
+  nodeData.value.recordType = type
+  handleUpdate()
+}
+
+const handleUpdate = () => {
+  emit('update', {
+    ...props.data,
+    ...nodeData.value
+  })
+}
+
+const toFlowState = () => ({
+  name: props.id,
+  type: 'record',
+  properties: {
+    recordType: nodeData.value.recordType,
+    startAction: nodeData.value.startAction,
+    startMessage: nodeData.value.startMessage,
+    channels: nodeData.value.channels,
+    maxDuration: nodeData.value.maxDuration,
+    maxSilence: nodeData.value.maxSilence,
+    playBeep: nodeData.value.playBeep,
+    trimSilence: nodeData.value.trimSilence,
+    transcription: nodeData.value.recordType === 'transcription' ? {
+      language: nodeData.value.transcriptionLanguage,
+      model: nodeData.value.transcriptionModel,
+      ...nodeData.value.transcriptionOptions
+    } : null
+  },
+  transitions: [
+    { event: 'completed', next: undefined },
+    { event: 'no_input', next: undefined },
+    { event: 'max_duration', next: undefined },
+    { event: 'error', next: undefined }
+  ]
+})
+
+defineExpose({
+  startRecording: () => {
+    isRecording.value = true
+    isExecuting.value = true
+    hasError.value = false
+  },
+  stopRecording: () => {
+    isRecording.value = false
+    isExecuting.value = false
+  },
+  getRecordingStatus: () => ({
+    isRecording: isRecording.value,
+    duration: 0, // 实际实现中需要跟踪录音时长
+    hasError: hasError.value
+  })
+})
+</script>
+
+<style scoped>
+.handle-warning {
+  @apply bg-yellow-500;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>
+

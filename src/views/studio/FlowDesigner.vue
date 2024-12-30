@@ -130,18 +130,12 @@
           <template #node-split="props">
             <SplitNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
           </template>
-
-          <template #node-fork_stream="props">
-            <ForkStreamNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
-          </template>
-
+ 
           <template #node-connect_virtual_agent="props">
             <ConnectVirtualAgentNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
           </template>
 
-          <template #node-capture_payments="props">
-            <CapturePaymentsNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
-          </template>
+
 
           <template #node-say_play="props">
             <SayPlayNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
@@ -387,8 +381,8 @@ import SetVariablesNode from '@/components/nodes/SetVariablesNode.vue'
 import HttpRequestNode from '@/components/nodes/HttpRequestNode.vue'
 import RunFunctionNode from '@/components/nodes/RunFunctionNode.vue'
 import ConnectVirtualAgentNode from '@/components/nodes/ConnectVirtualAgentNode.vue'
-import CapturePaymentsNode from '@/components/nodes/CapturePaymentsNode.vue'
-import ForkStreamNode from '@/components/nodes/ForkStreamNode.vue'
+
+ 
 import SendMessageNode from '@/components/nodes/SendMessageNode.vue'
 import CollectInputNode from '@/components/nodes/CollectInputNode.vue'
 import SendAndWaitNode from '@/components/nodes/SendAndWaitNode.vue'

@@ -1,7 +1,7 @@
 // src/tests/validation/flowValidator.test.ts
-import { FlowValidator } from '../../utils/validation';
-import { sampleFlow } from '../fixtures/sampleFlows';
-import { FlowValidationError } from '../../types/errors';
+import { FlowValidator } from '../utils/validation';
+import { sampleFlow } from './sampleFlows';
+import { FlowValidationError } from '../types/errors';
 import { describe, it } from 'node:test';
 
 describe('FlowValidator', () => {

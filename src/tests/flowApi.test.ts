@@ -1,8 +1,8 @@
 // src/tests/integration/flowApi.test.ts
 import request from 'supertest';
 import express from 'express';
-import { createFlowRouter } from '../../api/routes';
-import { sampleFlow } from '../fixtures/sampleFlows';
+import { createFlowRouter } from '../api/routes';
+import { sampleFlow } from './sampleFlows';
 import { describe, beforeEach, it } from 'node:test';
 
 describe('Flow API', () => {

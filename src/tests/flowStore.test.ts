@@ -1,7 +1,7 @@
 // src/tests/unit/flowStore.test.ts
  
-import { sampleFlow } from '../fixtures/sampleFlows';
-import { FlowNotFoundError, FlowValidationError } from '../../types/errors';
+import { sampleFlow } from './sampleFlows';
+import { FlowNotFoundError, FlowValidationError } from '../types/errors';
 import { FlowStore } from '@/stores';
 import { describe, beforeEach, it } from 'node:test';
 import { FlowDefinition } from '@/types/flow';
