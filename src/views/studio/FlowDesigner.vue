@@ -365,8 +365,10 @@ import ConditionBuilder from '@/components/builder/ConditionBuilder.vue'
 import VariableManager from '@/components/manager/VariableManager.vue'
 
 
-const showTestPanel = ref(false)
-const testTab = ref<'simulator' | 'chat'>('simulator')
+import { FlowStore, FlowExecutor } from '@/services'
+import { generateFlowDefinition } from '@/utils/flowUtils'
+import { useFlowStore } from '../../stores/flow''
+
 
 
 // 节点组件导入
@@ -398,6 +400,82 @@ import WidgetLibrary from '@/components/panels/WidgetLibrary.vue'
 
 import type { SimulationResults, TestResults } from '@/types/test'
 
+
+
+// Stores & Services
+const flowStore = new FlowStore()
+const flowExecutor = new FlowExecutor(flowStore)
+const store = useFlowStore()
+
+// State
+const isExecuting = ref(false)
+const executionError = ref<Error | null>(null)
+
+
+const showTestPanel = ref(false)
+const testTab = ref<'simulator' | 'chat'>('simulator')
+
+
+// Flow Management
+const saveFlow = async () => {
+  const nodes = getNodes()
+  const edges = getEdges()
+  
+  const flowDefinition = generateFlowDefinition(nodes, edges)
+  
+  try {
+    await store.saveFlow({
+      id: props.flowId,
+      definition: flowDefinition,
+      status: 'draft'
+    })
+    
+    changesCount.value = 0
+  } catch (error) {
+    console.error('Failed to save flow:', error)
+    // Show error notification
+  }
+}
+
+const executeFlow = async () => {
+  if (isExecuting.value) return
+  
+  try {
+    isExecuting.value = true
+    executionError.value = null
+    
+    // Save flow first
+    await saveFlow()
+    
+    // Start execution
+    const context = await flowExecutor.executeFlow(props.flowId)
+    
+    // Update nodes with execution results
+    updateNodesWithContext(context)
+    
+  } catch (error) {
+    console.error('Flow execution failed:', error)
+    executionError.value = error as Error
+  } finally {
+    isExecuting.value = false
+  }
+}
+
+const updateNodesWithContext = (context: any) => {
+  const nodes = getNodes()
+  
+  nodes.forEach(node => {
+    const stateData = context.stateData[node.id]
+    if (stateData) {
+      updateNode(node.id, {
+        data: {
+          ...node.data,
+          executionResult: stateData
+        }
+      })
+    }
+  })
+}
 
 // Router
 const router = useRouter()

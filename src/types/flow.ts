@@ -1,54 +1,70 @@
 // src/types/flow.ts
-export interface FlowTransition {
-  event: string;
-  next?: string;
+export interface Flow {
+  id: string;
+  name: string;
+  description: string;
+  definition: FlowDefinition;
+  metadata: FlowMetadata;
+  version: number;
+  status: 'draft' | 'published';
 }
 
-export interface FlowStateProperties {
-  offset?: {
-    x: number;
-    y: number;
+export interface FlowDefinition {
+  flags: {
+    allow_concurrent_calls: boolean;
   };
-  say?: string;
-  loop?: number;
-  [key: string]: any;
+  description: string;
+  states: FlowState[];
+  initial_state: string;
+  variables?: FlowVariable[];
 }
 
 export interface FlowState {
   name: string;
-  type: string;
-  properties: FlowStateProperties;
-  transitions: FlowTransition[];
+  type: StateType;
+  properties: StateProperties;
+  transitions: StateTransition[];
 }
 
-export interface FlowMetadata {
-  createdAt: Date;
-  updatedAt: Date;
-  status: 'draft' | 'published';
-  version: number;
-  commitMessage?: string;
-}
-
-export interface FlowDefinition {
-  flags?: {
-    allow_concurrent_calls?: boolean;
-    [key: string]: any;
+export interface StateProperties {
+  offset?: {
+    x: number;
+    y: number;
   };
-  description?: string;
-  states: FlowState[];
-  initial_state: string;
-  metadata?: FlowMetadata;
+  [key: string]: any;
 }
 
-export interface ExecutionContext {
-  flowId: string;
-  stateData: Record<string, any>;
-  variables: Record<string, any>;
-  messageHistory: any[];
+export interface StateTransition {
+  event: FlowEvent;
+  next?: string;
+  conditions?: TransitionCondition[];
 }
 
-export interface ExecutionResult {
-  event: string;
-  data?: any;
-  error?: Error;
-}
+export type StateType = 
+  | 'trigger'
+  | 'send_message'
+  | 'send_and_wait'
+  | 'set_variables'
+  | 'split'
+  | 'gather_input'
+  | 'connect_call'
+  | 'record'
+  | 'play_message'
+  | 'http_request'
+  | 'run_function'
+  | 'enqueue_call'
+  | 'connect_virtual_agent'
+  | 'nlp_intent';
+
+export type FlowEvent =
+  | 'incomingMessage'
+  | 'incomingCall'
+  | 'messageReceived'
+  | 'messageSent'
+  | 'inputReceived'
+  | 'timeout'
+  | 'error'
+  | 'success'
+  | 'audioComplete'
+  | 'callConnected'
+  | 'callDisconnected';

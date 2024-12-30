@@ -1,135 +1,221 @@
-<!-- src/components/nodes/RecordNode.vue -->
+// src/components/nodes/RecordNode.vue
 <template>
-    <div class="relative">
-      <div class="bg-white rounded-lg min-w-[300px] border-2" 
-           :class="{ 'border-emerald-500 ring-2 ring-emerald-500': isSelected, 'border-gray-200': !isSelected }">
-        <!-- Header -->
-        <div class="bg-emerald-500 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="font-medium text-base">{{ data.label || 'Record Call' }}</span>
+  <BaseNode
+    type="record"
+    :title="nodeData.label"
+    :is-selected="isSelected"
+    :is-executing="isExecuting"
+    :has-error="hasError"
+  >
+    <template #icon>
+      <MicIcon class="w-5 h-5 text-pink-500" :class="{ 'animate-pulse': isRecording }" />
+    </template>
+
+    <template #default>
+      <div class="p-4 space-y-4">
+        <!-- Record Type -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Record Type</label>
+          <div class="mt-2 flex space-x-2">
+            <button
+              v-for="type in recordTypes"
+              :key="type.value"
+              :class="[
+                'px-3 py-1.5 rounded text-sm transition-colors',
+                nodeData.recordType === type.value
+                  ? 'bg-pink-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ]"
+              @click="selectRecordType(type.value)"
+            >
+              {{ type.label }}
+            </button>
           </div>
-          <button class="text-white/80 hover:text-white">
-            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-            </svg>
-          </button>
         </div>
-  
-        <!-- Content Preview -->
-        <div class="p-4">
-          <div class="space-y-3">
-            <!-- Recording Status -->
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-gray-600">Status:</span>
-              <span class="text-sm font-medium" :class="{
-                'text-emerald-600': data.action === 'start',
-                'text-gray-600': data.action === 'stop'
-              }">
-                {{ data.action === 'start' ? 'Recording' : 'Stopped' }}
-              </span>
+
+        <!-- Start Action -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Start Action</label>
+          <select
+            v-model="nodeData.startAction"
+            class="mt-1 block w-full rounded-md border-gray-300"
+            @change="handleUpdate"
+          >
+            <option value="immediate">Start Immediately</option>
+            <option value="beep">Start After Beep</option>
+            <option value="message">Start After Message</option>
+          </select>
+
+          <div v-if="nodeData.startAction === 'message'" class="mt-2">
+            <input
+              type="text"
+              v-model="nodeData.startMessage"
+              class="block w-full rounded-md border-gray-300"
+              placeholder="Enter start message..."
+              @change="handleUpdate"
+            />
+          </div>
+        </div>
+
+        <!-- Recording Settings -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-medium text-gray-900">Recording Settings</h3>
+
+          <!-- Channels -->
+          <div>
+            <label class="block text-sm text-gray-700">Channels</label>
+            <select
+              v-model="nodeData.channels"
+              class="mt-1 block w-full rounded-md border-gray-300"
+              @change="handleUpdate"
+            >
+              <option value="mono">Mono</option>
+              <option value="dual">Dual (Both Legs)</option>
+            </select>
+          </div>
+
+          <!-- Duration -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-700">Max Duration (seconds)</label>
+              <input
+                type="number"
+                v-model.number="nodeData.maxDuration"
+                min="1"
+                max="3600"
+                class="mt-1 block w-full rounded-md border-gray-300"
+                @change="handleUpdate"
+              />
             </div>
-  
-            <!-- Recording Settings Summary -->
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-gray-600">Channels:</span>
-              <span class="text-sm font-medium text-gray-900">
-                {{ data.channels === 'dual' ? 'Dual' : 'Mono' }}
-              </span>
+            <div>
+              <label class="block text-sm text-gray-700">Max Silence (seconds)</label>
+              <input
+                type="number"
+                v-model.number="nodeData.maxSilence"
+                min="1"
+                max="60"
+                class="mt-1 block w-full rounded-md border-gray-300"
+                @change="handleUpdate"
+              />
             </div>
-  
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-gray-600">Max Duration:</span>
-              <span class="text-sm font-medium text-gray-900">
-                {{ data.maxLength || '∞' }} seconds
-              </span>
-            </div>
-  
-            <!-- Features -->
-            <div class="flex flex-wrap gap-2 mt-2">
-              <span v-if="data.trim" 
-                    class="px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-full">
-                Trim Silence
-              </span>
-              <span v-if="data.playBeep" 
-                    class="px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-full">
-                Play Beep
-              </span>
-            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                v-model="nodeData.playBeep"
+                class="rounded border-gray-300 text-pink-600"
+                @change="handleUpdate"
+              />
+              <span class="ml-2 text-sm text-gray-700">Play beep before recording</span>
+            </label>
+
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                v-model="nodeData.trimSilence"
+                class="rounded border-gray-300 text-pink-600"
+                @change="handleUpdate"
+              />
+              <span class="ml-2 text-sm text-gray-700">Trim silence</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Transcription Settings -->
+        <div v-if="nodeData.recordType === 'transcription'" class="space-y-4">
+          <h3 class="text-sm font-medium text-gray-900">Transcription Settings</h3>
+
+          <!-- Language -->
+          <div>
+            <label class="block text-sm text-gray-700">Language</label>
+            <select
+              v-model="nodeData.transcriptionLanguage"
+              class="mt-1 block w-full rounded-md border-gray-300"
+              @change="handleUpdate"
+            >
+              <option v-for="lang in languages" :key="lang.code" :value="lang.code">
+                {{ lang.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Model -->
+          <div>
+            <label class="block text-sm text-gray-700">Model</label>
+            <select
+              v-model="nodeData.transcriptionModel"
+              class="mt-1 block w-full rounded-md border-gray-300"
+              @change="handleUpdate"
+            >
+              <option value="base">Base</option>
+              <option value="enhanced">Enhanced</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+
+          <!-- Options -->
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                v-model="nodeData.transcriptionOptions.enablePunctuation"
+                class="rounded border-gray-300 text-pink-600"
+                @change="handleUpdate"
+              />
+              <span class="ml-2 text-sm text-gray-700">Enable punctuation</span>
+            </label>
+
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                v-model="nodeData.transcriptionOptions.enableSpeakerDiarization"
+                class="rounded border-gray-300 text-pink-600"
+                @change="handleUpdate"
+              />
+              <span class="ml-2 text-sm text-gray-700">Enable speaker diarization</span>
+            </label>
           </div>
         </div>
       </div>
-  
-      <!-- Connection Points -->
+    </template>
+
+    <template #handles>
       <Handle
-        type="target"
-        :position="Position.Top"
-        class="w-3 h-3 !bg-emerald-500"
-      />
-      
-      <div class="flex justify-around mt-3">
-        <div v-for="output in outputs" :key="output.id" 
-             class="flex flex-col items-center">
-          <Handle
-            type="source"
-            :position="Position.Bottom"
-            :id="output.id"
-            class="w-3 h-3 !bg-emerald-500 cursor-pointer hover:scale-110 transition-transform"
-          />
-          <span class="mt-1 text-xs text-gray-500 px-2 py-0.5 rounded"
-                :class="output.class">
-            {{ output.label }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { Handle, Position } from '@vue-flow/core'
-  
-  const props = defineProps<{
-    id: string
-    data: {
-      label?: string
-      action: 'start' | 'stop'
-      channels?: 'mono' | 'dual'
-      trim?: boolean
-      playBeep?: boolean
-      statusCallback?: string
-      maxLength?: number
-    }
-    isSelected?: boolean
-  }>()
-  
-  const emit = defineEmits<{
-    (e: 'update', id: string, data: any): void
-  }>()
-  
-  // Output connection points configuration
-  const outputs = [
-    { 
-      id: 'success', 
-      label: 'Success',
-      class: 'bg-green-100 text-green-700'
-    },
-    { 
-      id: 'no-input', 
-      label: 'No Input',
-      class: 'bg-yellow-100 text-yellow-700'
-    },
-    { 
-      id: 'max-length', 
-      label: 'Max Length',
-      class: 'bg-orange-100 text-orange-700'
-    },
-    { 
-      id: 'error', 
-      label: 'Error',
-      class: 'bg-red-100 text-red-700'
-    }
-  ]
-  </script>
+        type="source"
+        :position="Position.Right"
+        id="completed"
+        class="handle-success"
+      >
+        <span class="handle-label">Completed</span>
+      </Handle>
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="no_input"
+        class="handle-warning"
+      >
+        <span class="handle-label">No Input</span>
+      </Handle>
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="max_duration"
+        class="handle-warning"
+      >
+        <span class="handle-label">Max Duration</span>
+      </Handle>
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="error"
+        class="handle-error"
+      >
+        <span class="handle-label">Error</span>
+      </Handle>
+    </template>
+  </BaseNode>
+</template>
+

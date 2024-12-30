@@ -1,191 +1,437 @@
-<!-- src/components/nodes/ConnectVirtualAgentNode.vue -->
+// src/components/nodes/ConnectVirtualAgentNode.vue
 <template>
-    <div class="relative">
-      <div class="bg-white rounded-lg min-w-[300px] border-2" 
-           :class="{ 'border-indigo-500 ring-2 ring-indigo-500': isSelected, 'border-gray-200': !isSelected }">
-        <!-- Header -->
-        <div class="bg-indigo-500 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" 
-                stroke-width="2"/>
-            </svg>
-            <span class="font-medium text-base">{{ data.label || 'Connect Virtual Agent' }}</span>
-          </div>
-          <button class="text-white/80 hover:text-white">
-            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-            </svg>
-          </button>
-        </div>
-  
-        <!-- Content -->
-        <div class="p-4">
-          <div class="space-y-4">
-            <!-- Agent Selection -->
-            <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">VIRTUAL AGENT</label>
-              <select 
-                v-model="data.agentId"
-                class="w-full px-3 py-2 border rounded text-sm"
-                @change="updateNode"
-              >
-                <option value="">Select Virtual Agent...</option>
-                <option v-for="agent in virtualAgents" :key="agent.id" :value="agent.id">
-                  {{ agent.name }}
-                </option>
-              </select>
-            </div>
-  
-            <!-- Language -->
-            <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">LANGUAGE</label>
-              <select 
-                v-model="data.language"
-                class="w-full px-3 py-2 border rounded text-sm"
-                @change="updateNode"
-              >
-                <option value="en-US">English (US)</option>
-                <option value="es-ES">Spanish (ES)</option>
-                <option value="fr-FR">French (FR)</option>
-              </select>
-            </div>
-  
-            <!-- Handoff Settings -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center justify-between mb-3">
-                <label class="text-sm font-medium text-gray-700">HANDOFF SETTINGS</label>
-              </div>
-              <div class="space-y-3">
-                <!-- Handoff Timeout -->
-                <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1">TIMEOUT (SECONDS)</label>
-                  <input
-                    type="number"
-                    v-model.number="data.handoffTimeout"
-                    min="0"
-                    max="300"
-                    class="w-full px-3 py-2 border rounded text-sm"
-                    @change="updateNode"
-                  />
-                </div>
-  
-                <!-- Handoff Queue -->
-                <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1">HANDOFF QUEUE</label>
-                  <select
-                    v-model="data.handoffQueue"
-                    class="w-full px-3 py-2 border rounded text-sm"
-                    @change="updateNode"
-                  >
-                    <option value="">Select Queue...</option>
-                    <option value="support">Support Queue</option>
-                    <option value="sales">Sales Queue</option>
-                    <option value="service">Customer Service</option>
-                  </select>
-                </div>
-  
-                <!-- Handoff Message -->
-                <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1">HANDOFF MESSAGE</label>
-                  <textarea
-                    v-model="data.handoffMessage"
-                    rows="2"
-                    placeholder="Message to play during handoff..."
-                    class="w-full px-3 py-2 border rounded text-sm"
-                    @change="updateNode"
-                  ></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Connection Points -->
-      <Handle
-        type="target"
-        :position="Position.Top"
-        class="w-3 h-3 !bg-indigo-500"
-      />
-      
-      <!-- Output Handles -->
-      <div class="flex justify-around mt-3">
-        <div v-for="output in outputs" 
-             :key="output.id" 
-             class="flex flex-col items-center">
-          <Handle
-            type="source"
-            :position="Position.Bottom"
-            :id="output.id"
-            class="w-3 h-3 !bg-indigo-500 cursor-pointer hover:scale-110 transition-transform"
-          />
-          <span 
-            class="mt-1 text-xs text-gray-500 px-2 py-0.5 rounded"
-            :class="output.class"
+  <BaseNode
+    type="connect_virtual_agent"
+    :title="nodeData.label"
+    :is-selected="isSelected"
+    :is-executing="isExecuting"
+    :has-error="hasError"
+  >
+    <template #icon>
+      <BotIcon class="w-5 h-5 text-indigo-500" />
+    </template>
+
+    <template #default>
+      <div class="p-4 space-y-4">
+        <!-- Virtual Agent Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Virtual Agent</label>
+          <select
+            v-model="nodeData.agentId"
+            class="mt-1 block w-full rounded-md border-gray-300"
+            @change="handleUpdate"
           >
-            {{ output.label }}
-          </span>
+            <option value="">Select an agent...</option>
+            <option v-for="agent in virtualAgents" :key="agent.id" :value="agent.id">
+              {{ agent.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Language Settings -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Language</label>
+          <select
+            v-model="nodeData.language"
+            class="mt-1 block w-full rounded-md border-gray-300"
+            @change="handleUpdate"
+          >
+            <option value="en-US">English (US)</option>
+            <option value="es-ES">Spanish (Spain)</option>
+            <option value="fr-FR">French (France)</option>
+            <option value="de-DE">German</option>
+            <option value="zh-CN">Chinese (Simplified)</option>
+            <option value="ja-JP">Japanese</option>
+          </select>
+        </div>
+
+        <!-- NLP Settings -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">NLP Settings</label>
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                v-model="nodeData.enableTranscription"
+                class="rounded border-gray-300 text-indigo-600"
+                @change="handleUpdate"
+              />
+              <span class="ml-2 text-sm text-gray-700">Enable Speech-to-Text</span>
+            </label>
+            
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                v-model="nodeData.enableSentimentAnalysis"
+                class="rounded border-gray-300 text-indigo-600"
+                @change="handleUpdate"
+              />
+              <span class="ml-2 text-sm text-gray-700">Enable Sentiment Analysis</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Context Variables -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-sm font-medium text-gray-700">Context Variables</label>
+            <button
+              @click="addContextVariable"
+              class="text-sm text-indigo-600 hover:text-indigo-700"
+            >
+              Add Variable
+            </button>
+          </div>
+          
+          <div class="space-y-2">
+            <div
+              v-for="(variable, index) in nodeData.contextVariables"
+              :key="index"
+              class="flex items-center gap-2"
+            >
+              <input
+                v-model="variable.key"
+                type="text"
+                placeholder="Variable name"
+                class="flex-1 rounded-md border-gray-300"
+                @change="handleUpdate"
+              />
+              <input
+                v-model="variable.value"
+                type="text"
+                placeholder="Value"
+                class="flex-1 rounded-md border-gray-300"
+                @change="handleUpdate"
+              />
+              <button
+                @click="removeContextVariable(index)"
+                class="text-red-500 hover:text-red-700"
+              >
+                <TrashIcon class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Handoff Settings -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Handoff Settings</label>
+          <div class="space-y-4">
+            <!-- Handoff Conditions -->
+            <div>
+              <select
+                v-model="nodeData.handoffTrigger"
+                class="block w-full rounded-md border-gray-300"
+                @change="handleUpdate"
+              >
+                <option value="never">Never</option>
+                <option value="customer_request">On Customer Request</option>
+                <option value="sentiment">On Negative Sentiment</option>
+                <option value="no_resolution">On No Resolution</option>
+                <option value="custom">Custom Condition</option>
+              </select>
+            </div>
+
+            <!-- Custom Handoff Condition -->
+            <div v-if="nodeData.handoffTrigger === 'custom'">
+              <textarea
+                v-model="nodeData.customHandoffCondition"
+                rows="3"
+                class="block w-full rounded-md border-gray-300"
+                placeholder="Enter custom handoff condition..."
+                @change="handleUpdate"
+              ></textarea>
+            </div>
+
+            <!-- Handoff Target -->
+            <div v-if="nodeData.handoffTrigger !== 'never'">
+              <label class="block text-sm text-gray-700">Handoff Target</label>
+              <select
+                v-model="nodeData.handoffTarget"
+                class="mt-1 block w-full rounded-md border-gray-300"
+                @change="handleUpdate"
+              >
+                <option value="queue">Queue</option>
+                <option value="agent">Specific Agent</option>
+                <option value="skill">Skill Based</option>
+              </select>
+
+              <!-- Target-specific settings -->
+              <div class="mt-2">
+                <template v-if="nodeData.handoffTarget === 'queue'">
+                  <select
+                    v-model="nodeData.handoffQueue"
+                    class="block w-full rounded-md border-gray-300"
+                    @change="handleUpdate"
+                  >
+                    <option v-for="queue in queueOptions" :key="queue.id" :value="queue.id">
+                      {{ queue.name }}
+                    </option>
+                  </select>
+                </template>
+
+                <template v-if="nodeData.handoffTarget === 'skill'">
+                  <select
+                    v-model="nodeData.handoffSkills"
+                    multiple
+                    class="block w-full rounded-md border-gray-300"
+                    @change="handleUpdate"
+                  >
+                    <option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">
+                      {{ skill.name }}
+                    </option>
+                  </select>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeout Settings -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Timeout Settings</label>
+          <div class="grid grid-cols-2 gap-4 mt-2">
+            <div>
+              <label class="block text-sm text-gray-700">Max Duration</label>
+              <input
+                type="number"
+                v-model.number="nodeData.maxDuration"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300"
+                @change="handleUpdate"
+              />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-700">No Input Timeout</label>
+              <input
+                type="number"
+                v-model.number="nodeData.noInputTimeout"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300"
+                @change="handleUpdate"
+              />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { Handle, Position } from '@vue-flow/core'
-  
-  const props = defineProps<{
-    id: string
-    data: {
-      label?: string
-      agentId?: string
-      language?: string
-      handoffTimeout?: number
-      handoffQueue?: string
-      handoffMessage?: string
-    }
-    isSelected?: boolean
-  }>()
-  
-  const emit = defineEmits<{
-    (e: 'update', id: string, data: any): void
-  }>()
-  
-  // Mock virtual agents data
-  const virtualAgents = [
-    { id: 'va_1', name: 'Customer Support Bot' },
-    { id: 'va_2', name: 'Sales Assistant' },
-    { id: 'va_3', name: 'Technical Support Bot' }
-  ]
-  
-  // Output connection points configuration
-  const outputs = [
-    { 
-      id: 'completed', 
-      label: 'Completed',
-      class: 'bg-green-100 text-green-700'
+    </template>
+
+    <template #handles>
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="completed"
+        class="handle-success"
+      >
+        <span class="handle-label">Completed</span>
+      </Handle>
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="handoff"
+        class="handle-info"
+      >
+        <span class="handle-label">Handoff</span>
+      </Handle>
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="timeout"
+        class="handle-warning"
+      >
+        <span class="handle-label">Timeout</span>
+      </Handle>
+      <Handle
+        type="source"
+        :position="Position.Right"
+        id="error"
+        class="handle-error"
+      >
+        <span class="handle-label">Error</span>
+      </Handle>
+    </template>
+  </BaseNode>
+</template>
+
+
+// 继续 ConnectVirtualAgentNode.vue 的 script 部分
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Handle, Position } from '@vue-flow/core'
+import { Bot, Trash } from 'lucide-vue-next'
+import BaseNode from './BaseNode.vue'
+
+const props = defineProps<{
+  id: string
+  data: any
+  isSelected?: boolean
+}>()
+
+const emit = defineEmits(['update'])
+
+// 虚拟代理列表
+const virtualAgents = [
+  { id: 'customer_support', name: 'Customer Support Bot' },
+  { id: 'sales_assistant', name: 'Sales Assistant' },
+  { id: 'tech_support', name: 'Technical Support Bot' },
+  { id: 'booking_agent', name: 'Booking Assistant' }
+]
+
+// 队列选项
+const queueOptions = [
+  { id: 'general_support', name: 'General Support' },
+  { id: 'technical', name: 'Technical Support' },
+  { id: 'sales', name: 'Sales Team' },
+  { id: 'premium', name: 'Premium Support' }
+]
+
+// 技能选项
+const availableSkills = [
+  { id: 'technical', name: 'Technical Support' },
+  { id: 'sales', name: 'Sales' },
+  { id: 'billing', name: 'Billing' },
+  { id: 'english', name: 'English' },
+  { id: 'spanish', name: 'Spanish' }
+]
+
+// 节点数据
+const nodeData = ref({
+  label: props.data.label || 'Connect Virtual Agent',
+  agentId: props.data.agentId || '',
+  language: props.data.language || 'en-US',
+
+  // NLP 设置
+  enableTranscription: props.data.enableTranscription || false,
+  enableSentimentAnalysis: props.data.enableSentimentAnalysis || false,
+
+  // 上下文变量
+  contextVariables: props.data.contextVariables || [],
+
+  // 转接设置
+  handoffTrigger: props.data.handoffTrigger || 'never',
+  customHandoffCondition: props.data.customHandoffCondition || '',
+  handoffTarget: props.data.handoffTarget || 'queue',
+  handoffQueue: props.data.handoffQueue || '',
+  handoffSkills: props.data.handoffSkills || [],
+
+  // 超时设置
+  maxDuration: props.data.maxDuration || 1800, // 30分钟
+  noInputTimeout: props.data.noInputTimeout || 60, // 60秒
+
+  // 执行状态
+  status: props.data.status || 'idle',
+  errorMessage: props.data.errorMessage || ''
+})
+
+const isExecuting = ref(false)
+const hasError = ref(false)
+
+// 方法
+const addContextVariable = () => {
+  nodeData.value.contextVariables.push({
+    key: '',
+    value: ''
+  })
+  handleUpdate()
+}
+
+const removeContextVariable = (index: number) => {
+  nodeData.value.contextVariables.splice(index, 1)
+  handleUpdate()
+}
+
+const handleUpdate = () => {
+  emit('update', {
+    ...props.data,
+    ...nodeData.value
+  })
+}
+
+// 转换为 Flow State
+const toFlowState = () => {
+  return {
+    name: props.id,
+    type: 'connect_virtual_agent',
+    properties: {
+      agentId: nodeData.value.agentId,
+      language: nodeData.value.language,
+      nlpSettings: {
+        enableTranscription: nodeData.value.enableTranscription,
+        enableSentimentAnalysis: nodeData.value.enableSentimentAnalysis
+      },
+      contextVariables: nodeData.value.contextVariables.reduce((acc: Record<string, string>, curr: any) => {
+        if (curr.key && curr.value) {
+          acc[curr.key] = curr.value
+        }
+        return acc
+      }, {}),
+      handoff: {
+        trigger: nodeData.value.handoffTrigger,
+        condition: nodeData.value.handoffTrigger === 'custom' 
+          ? nodeData.value.customHandoffCondition 
+          : null,
+        target: {
+          type: nodeData.value.handoffTarget,
+          queue: nodeData.value.handoffQueue,
+          skills: nodeData.value.handoffSkills
+        }
+      },
+      timeouts: {
+        maxDuration: nodeData.value.maxDuration,
+        noInput: nodeData.value.noInputTimeout
+      }
     },
-    { 
-      id: 'handoff', 
-      label: 'Live Agent Handoff',
-      class: 'bg-blue-100 text-blue-700'
-    },
-    { 
-      id: 'hangup', 
-      label: 'Hangup',
-      class: 'bg-yellow-100 text-yellow-700'
-    },
-    { 
-      id: 'failed', 
-      label: 'Failed',
-      class: 'bg-red-100 text-red-700'
-    }
-  ]
-  
-  // Update node data
-  const updateNode = () => {
-    emit('update', props.id, {
-      ...props.data
-    })
+    transitions: [
+      { event: 'completed', next: undefined },
+      { event: 'handoff', next: undefined },
+      { event: 'timeout', next: undefined },
+      { event: 'error', next: undefined }
+    ]
   }
-  </script>
+}
+
+// 用于监控虚拟代理状态的方法
+const monitorAgentStatus = async () => {
+  try {
+    isExecuting.value = true
+    hasError.value = false
+    // 实际实现中这里会与虚拟代理服务通信
+    // 监控会话状态、意图识别结果、情感分析等
+  } catch (error) {
+    hasError.value = true
+    nodeData.value.errorMessage = error.message
+  } finally {
+    isExecuting.value = false
+  }
+}
+
+// 导出一些方法供父组件使用
+defineExpose({
+  monitorAgentStatus,
+  getAgentStatus: () => nodeData.value.status,
+  resetAgent: () => {
+    nodeData.value.status = 'idle'
+    nodeData.value.errorMessage = ''
+    hasError.value = false
+  }
+})
+</script>
+
+<style scoped>
+.handle-info {
+  @apply bg-blue-500;
+}
+
+.handle-warning {
+  @apply bg-yellow-500;
+}
+
+.multiselect {
+  @apply text-sm;
+}
+
+.handoff-active {
+  @apply border-blue-500 ring-2 ring-blue-200;
+}
+</style>
