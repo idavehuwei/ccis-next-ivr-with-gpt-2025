@@ -1,0 +1,19 @@
+// docker-compose.yml
+version: '3.8'
+
+services:
+  flow-engine:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - FLOW_EXECUTION_TIMEOUT=30000
+      - FLOW_MAX_CONCURRENT_EXECUTIONS=5
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped

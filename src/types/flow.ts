@@ -1,68 +1,54 @@
 // src/types/flow.ts
-export interface Position {
-    x: number
-    y: number
-  }
-  
-  export interface FlowTemplate {
-    name: string
-    description: string
-    nodes: FlowNode[]
-    edges: FlowEdge[]
-  }
-  
-  export interface FlowNode {
-    id: string
-    type: string
-    position: Position
-    data: NodeData
-    style?: Record<string, any>
-    selected?: boolean
-  }
-  
-  export interface NodeData {
-    label: string
-    triggerConfig?: TriggerConfig
-    [key: string]: any
-  }
-  
-  export interface TriggerConfig {
-    channel: string
-    conditions: TriggerCondition[]
-    variableMappings: VariableMapping[]
-  }
-  
-  export interface TriggerCondition {
-    type: 'keyword' | 'regex' | 'intent'
-    value: string
-  }
-  
-  export interface VariableMapping {
-    source: string
-    target: string
-  }
-  
-  export interface FlowEdge {
-    id: string
-    source: string
-    target: string
-    sourceHandle?: string
-    targetHandle?: string
-    type?: string
-    animated?: boolean
-    style?: Record<string, any>
-    data?: EdgeData
-    selected?: boolean
-  }
-  
-  export interface EdgeData {
-    label?: string
-    selectable?: boolean
-    hoverable?: boolean
-  }
-  
-  export interface Viewport {
-    x: number
-    y: number
-    zoom: number
-  }
+export interface FlowTransition {
+  event: string;
+  next?: string;
+}
+
+export interface FlowStateProperties {
+  offset?: {
+    x: number;
+    y: number;
+  };
+  say?: string;
+  loop?: number;
+  [key: string]: any;
+}
+
+export interface FlowState {
+  name: string;
+  type: string;
+  properties: FlowStateProperties;
+  transitions: FlowTransition[];
+}
+
+export interface FlowMetadata {
+  createdAt: Date;
+  updatedAt: Date;
+  status: 'draft' | 'published';
+  version: number;
+  commitMessage?: string;
+}
+
+export interface FlowDefinition {
+  flags?: {
+    allow_concurrent_calls?: boolean;
+    [key: string]: any;
+  };
+  description?: string;
+  states: FlowState[];
+  initial_state: string;
+  metadata?: FlowMetadata;
+}
+
+export interface ExecutionContext {
+  flowId: string;
+  stateData: Record<string, any>;
+  variables: Record<string, any>;
+  messageHistory: any[];
+}
+
+export interface ExecutionResult {
+  event: string;
+  data?: any;
+  error?: Error;
+}

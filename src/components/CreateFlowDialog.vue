@@ -1,19 +1,17 @@
-# src/components/CreateFlowDialog.vue
 <template>
   <div v-if="modelValue" class="fixed inset-0 z-50 overflow-y-auto" @click="closeDialog">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+    <div class="fixed inset-0 bg-black bg-opacity-30 transition-opacity" />
 
     <!-- Dialog -->
     <div class="flex min-h-screen items-center justify-center p-4">
-      <div class="relative w-full max-w-3xl transform overflow-hidden rounded-lg bg-white shadow-xl transition-all"
-           @click.stop>
+      <div class="relative w-full max-w-3xl bg-white rounded-lg shadow-xl" @click.stop>
         <!-- Header -->
-        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-700">New Flow</h3>
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h3 class="text-xl font-medium text-gray-900">New Flow</h3>
           <button @click="closeDialog" class="text-gray-400 hover:text-gray-500">
-            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -24,98 +22,94 @@
             <p class="text-gray-600 mb-6">
               Name your flow, and start building with Studio.
             </p>
-
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">
-                  FLOW NAME
-                </label>
+                <label class="block text-sm font-medium text-gray-700">FLOW NAME</label>
                 <input
-                  type="text"
                   v-model="flowName"
+                  type="text"
                   placeholder="My first flow"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
           </template>
 
-          <template v-else-if="currentStep === 2">
+          <template v-if="currentStep === 2">
             <p class="text-gray-600 mb-6">
               Choose a template to get going, or start from scratch with a blank canvas.
             </p>
 
-            <div class="grid grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
-              <!-- Start from scratch template -->
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Start from scratch -->
               <div 
-                class="border rounded-lg p-4 cursor-pointer hover:border-blue-500"
+                class="relative border rounded-lg p-4 cursor-pointer hover:border-blue-500"
                 :class="{'border-blue-500 bg-blue-50': selectedTemplate === 'scratch'}"
-                @click="selectedTemplate = 'scratch'"
+                @click="selectTemplate('scratch')"
               >
-                <div class="flex items-center justify-between mb-2">
+                <div class="space-y-2">
                   <h4 class="font-medium">Start from scratch.</h4>
-                  <div v-if="selectedTemplate === 'scratch'" class="text-blue-500">
-                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
+                  <p class="text-sm text-gray-500">Start building from scratch.</p>
                 </div>
-                <p class="text-gray-500 text-sm mb-4">Start building from scratch.</p>
-                <a href="#" class="text-blue-600 text-sm hover:text-blue-700">Step-by-Step Tutorial →</a>
+                <div v-if="selectedTemplate === 'scratch'" class="absolute top-4 right-4 text-blue-500">
+                  <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                  </svg>
+                </div>
               </div>
 
-              <!-- Appointment Reminders template -->
+              <!-- Appointment Reminders -->
               <div 
-                class="border rounded-lg p-4 cursor-pointer hover:border-blue-500"
+                class="relative border rounded-lg p-4 cursor-pointer hover:border-blue-500"
                 :class="{'border-blue-500 bg-blue-50': selectedTemplate === 'appointment'}"
-                @click="selectedTemplate = 'appointment'"
+                @click="selectTemplate('appointment')"
               >
-                <div class="flex items-center justify-between mb-2">
+                <div class="space-y-2">
                   <h4 class="font-medium">Appointment Reminders</h4>
-                  <div v-if="selectedTemplate === 'appointment'" class="text-blue-500">
-                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
+                  <p class="text-sm text-gray-500">Reduce no-shows by sending confirmation messages.</p>
+                  <a href="#" class="text-blue-600 text-sm hover:text-blue-700">Step-by-Step Tutorial →</a>
                 </div>
-                <p class="text-gray-500 text-sm mb-4">Reduce no-shows by sending confirmation messages.</p>
-                <a href="#" class="text-blue-600 text-sm hover:text-blue-700">Step-by-Step Tutorial →</a>
+                <div v-if="selectedTemplate === 'appointment'" class="absolute top-4 right-4 text-blue-500">
+                  <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                  </svg>
+                </div>
               </div>
 
-              <!-- IVR / Phone Tree template -->
+              <!-- IVR / Phone Tree -->
               <div 
-                class="border rounded-lg p-4 cursor-pointer hover:border-blue-500"
+                class="relative border rounded-lg p-4 cursor-pointer hover:border-blue-500"
                 :class="{'border-blue-500 bg-blue-50': selectedTemplate === 'ivr'}"
-                @click="selectedTemplate = 'ivr'"
+                @click="selectTemplate('ivr')"
               >
-                <div class="flex items-center justify-between mb-2">
+                <div class="space-y-2">
                   <h4 class="font-medium">IVR / Phone Tree</h4>
-                  <div v-if="selectedTemplate === 'ivr'" class="text-blue-500">
-                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
+                  <p class="text-sm text-gray-500">An Interactive Voice Response (IVR) system that precisely routes each caller.</p>
+                  <a href="#" class="text-blue-600 text-sm hover:text-blue-700">Step-by-Step Tutorial →</a>
                 </div>
-                <p class="text-gray-500 text-sm mb-4">An interactive Voice Response (IVR) system that precisely routes each caller.</p>
-                <a href="#" class="text-blue-600 text-sm hover:text-blue-700">Step-by-Step Tutorial →</a>
+                <div v-if="selectedTemplate === 'ivr'" class="absolute top-4 right-4 text-blue-500">
+                  <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                  </svg>
+                </div>
               </div>
 
-              <!-- Messaging Chatbot template -->
+              <!-- SMS Chatbot -->
               <div 
-                class="border rounded-lg p-4 cursor-pointer hover:border-blue-500"
-                :class="{'border-blue-500 bg-blue-50': selectedTemplate === 'chatbot'}"
-                @click="selectedTemplate = 'chatbot'"
+                class="relative border rounded-lg p-4 cursor-pointer hover:border-blue-500"
+                :class="{'border-blue-500 bg-blue-50': selectedTemplate === 'sms'}"
+                @click="selectTemplate('sms')"
               >
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="font-medium">Messaging Chatbot</h4>
-                  <div v-if="selectedTemplate === 'chatbot'" class="text-blue-500">
-                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
+                <div class="space-y-2">
+                  <h4 class="font-medium">SMS Chatbot</h4>
+                  <p class="text-sm text-gray-500">Have a conversation with your customers using both inbound and outbound SMS.</p>
+                  <a href="#" class="text-blue-600 text-sm hover:text-blue-700">Step-by-Step Tutorial →</a>
                 </div>
-                <p class="text-gray-500 text-sm mb-4">Have a conversation with your customers using both inbound and outbound SMS or WhatsApp.</p>
-                <a href="#" class="text-blue-600 text-sm hover:text-blue-700">Step-by-Step Tutorial →</a>
+                <div v-if="selectedTemplate === 'sms'" class="absolute top-4 right-4 text-blue-500">
+                  <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                  </svg>
+                </div>
               </div>
             </div>
           </template>
@@ -130,7 +124,7 @@
               @click="currentStep = 1"
             >
               <svg class="w-5 h-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" />
               </svg>
               Back
             </button>
@@ -147,7 +141,7 @@
               :disabled="currentStep === 1 ? !flowName.trim() : !selectedTemplate"
               @click="handleNext"
             >
-              Next
+              {{ currentStep === 2 ? 'Create Flow' : 'Next' }}
             </button>
           </div>
         </div>
@@ -185,11 +179,14 @@ const resetDialog = () => {
   selectedTemplate.value = ''
 }
 
+const selectTemplate = (templateId: string) => {
+  selectedTemplate.value = templateId
+}
+
 const handleNext = () => {
   if (currentStep.value === 1) {
     currentStep.value = 2
   } else {
-    // 模拟生成一个新的流程ID
     const newFlowId = Date.now().toString()
     
     emit('create', {
@@ -197,7 +194,6 @@ const handleNext = () => {
       template: selectedTemplate.value
     })
     
-    // 关闭对话框并导航到流程设计器
     closeDialog()
     router.push(`/studio/flows/${newFlowId}/edit`)
   }

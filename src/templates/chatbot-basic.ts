@@ -1,7 +1,7 @@
 // src/templates/chatbot-basic.ts
 import type { MessageTemplate } from '@/types/message'
 
-// 预定义消息模板
+// 保持原有的消息模板
 const messageTemplates: MessageTemplate[] = [
   {
     id: 'greeting',
@@ -59,57 +59,86 @@ const messageTemplates: MessageTemplate[] = [
     type: 'text',
     category: 'order',
     tags: ['order', 'status']
+  },
+  // 添加预约相关消息模板
+  {
+    id: 'appointment-reminder',
+    name: 'Appointment Reminder',
+    content: 'Hi {{customer_name}}, this is a reminder about your appointment on {{appointment_time}}. Reply YES to confirm or NO to reschedule.',
+    variables: ['customer_name', 'appointment_time'],
+    type: 'text',
+    category: 'appointment',
+    tags: ['appointment', 'reminder']
+  },
+  // IVR相关消息模板
+  {
+    id: 'ivr-welcome',
+    name: 'IVR Welcome',
+    content: 'Welcome to our service. For sales press 1, for support press 2, for billing press 3.',
+    variables: [],
+    type: 'text',
+    category: 'ivr',
+    tags: ['ivr', 'welcome']
   }
 ]
 
-export const basicChatbotTemplate = {
-  name: 'Basic Chatbot',
-  description: 'Simple chatbot with NLP intent classification',
+// 可复用的基础节点配置
+const baseNodes = {
+  trigger: {
+    id: 'trigger-1',
+    type: 'trigger',
+    position: { x: 250, y: 50 },
+    data: {
+      label: 'Message Trigger',
+      triggerType: 'incoming_message'
+    }
+  },
+  setVars: {
+    id: 'set-vars',
+    type: 'set_variables',
+    position: { x: 250, y: 150 },
+    data: {
+      label: 'Set Initial Variables',
+      variables: [
+        {
+          name: 'customer_name',
+          value: '{{contact.name}}',
+          type: 'string'
+        },
+        {
+          name: 'order_id',
+          value: '{{contact.last_order_id}}',
+          type: 'string'
+        }
+      ]
+    }
+  },
+  nlpIntent: {
+    id: 'nlp-1',
+    type: 'nlp_intent',
+    position: { x: 250, y: 250 },
+    data: {
+      label: 'Classify Intent',
+      service: 'dialogflow',
+      intents: [
+        { name: 'greeting', confidence: '0.7' },
+        { name: 'help', confidence: '0.7' },
+        { name: 'goodbye', confidence: '0.7' },
+        { name: 'order-status', confidence: '0.7' }
+      ]
+    }
+  }
+}
+
+// SMS模板 (使用原有的basicChatbotTemplate并扩展)
+export const smsTemplate = {
+  id: 'sms',
+  name: 'SMS Chatbot',
+  description: 'Have a conversation with your customers using both inbound and outbound SMS.',
   nodes: [
-    {
-      id: 'trigger-1',
-      type: 'trigger',
-      position: { x: 250, y: 50 },
-      data: {
-        label: 'Message Trigger',
-        triggerType: 'incoming_message'
-      }
-    },
-    {
-      id: 'set-vars',
-      type: 'set_variables',
-      position: { x: 250, y: 150 },
-      data: {
-        label: 'Set Initial Variables',
-        variables: [
-          {
-            name: 'customer_name',
-            value: '{{contact.name}}',
-            type: 'string'
-          },
-          {
-            name: 'order_id',
-            value: '{{contact.last_order_id}}',
-            type: 'string'
-          }
-        ]
-      }
-    },
-    {
-      id: 'nlp-1',
-      type: 'nlp_intent',
-      position: { x: 250, y: 250 },
-      data: {
-        label: 'Classify Intent',
-        service: 'dialogflow',
-        intents: [
-          { name: 'greeting', confidence: '0.7' },
-          { name: 'help', confidence: '0.7' },
-          { name: 'goodbye', confidence: '0.7' },
-          { name: 'order-status', confidence: '0.7' }
-        ]
-      }
-    },
+    baseNodes.trigger,
+    baseNodes.setVars,
+    baseNodes.nlpIntent,
     {
       id: 'msg-greeting',
       type: 'send_message',
@@ -117,10 +146,7 @@ export const basicChatbotTemplate = {
       data: {
         label: 'Send Greeting',
         templateId: 'greeting',
-        queueSettings: {
-          enabled: true,
-          delay: 0
-        }
+        queueSettings: { enabled: true, delay: 0 }
       }
     },
     {
@@ -130,185 +156,264 @@ export const basicChatbotTemplate = {
       data: {
         label: 'Send Help',
         templateId: 'help',
-        queueSettings: {
-          enabled: true,
-          delay: 1
-        }
-      }
-    },
-    {
-      id: 'msg-order-status',
-      type: 'send_message',
-      position: { x: 400, y: 400 },
-      data: {
-        label: 'Send Order Status',
-        templateId: 'order-status',
-        queueSettings: {
-          enabled: true,
-          delay: 1
-        }
-      }
-    },
-    {
-      id: 'msg-goodbye',
-      type: 'send_message',
-      position: { x: 550, y: 400 },
-      data: {
-        label: 'Send Goodbye',
-        templateId: 'goodbye',
-        queueSettings: {
-          enabled: true,
-          delay: 0
-        }
+        queueSettings: { enabled: true, delay: 1 }
       }
     },
     {
       id: 'msg-fallback',
       type: 'send_message',
-      position: { x: 700, y: 400 },
+      position: { x: 400, y: 400 },
       data: {
         label: 'Send Fallback',
         templateId: 'fallback',
-        queueSettings: {
-          enabled: true,
-          delay: 1
-        }
+        queueSettings: { enabled: true, delay: 1 }
       }
     }
   ],
   edges: [
-    {
-      id: 'e1-2',
-      source: 'trigger-1',
-      target: 'set-vars',
-      type: 'smoothstep'
-    },
-    {
-      id: 'e2-3',
-      source: 'set-vars',
-      target: 'nlp-1',
-      type: 'smoothstep'
-    },
-    {
-      id: 'e3-4',
-      source: 'nlp-1',
-      target: 'msg-greeting',
-      sourceHandle: 'greeting',
-      type: 'smoothstep'
-    },
-    {
-      id: 'e3-5',
-      source: 'nlp-1',
-      target: 'msg-help',
-      sourceHandle: 'help',
-      type: 'smoothstep'
-    },
-    {
-      id: 'e3-6',
-      source: 'nlp-1',
-      target: 'msg-order-status',
-      sourceHandle: 'order-status',
-      type: 'smoothstep'
-    },
-    {
-      id: 'e3-7',
-      source: 'nlp-1',
-      target: 'msg-goodbye',
-      sourceHandle: 'goodbye',
-      type: 'smoothstep'
-    },
-    {
-      id: 'e3-8',
-      source: 'nlp-1',
-      target: 'msg-fallback',
-      sourceHandle: 'fallback',
-      type: 'smoothstep'
-    }
+    { id: 'e1-2', source: 'trigger-1', target: 'set-vars', type: 'smoothstep' },
+    { id: 'e2-3', source: 'set-vars', target: 'nlp-1', type: 'smoothstep' },
+    { id: 'e3-4', source: 'nlp-1', target: 'msg-greeting', sourceHandle: 'greeting', type: 'smoothstep' },
+    { id: 'e3-5', source: 'nlp-1', target: 'msg-help', sourceHandle: 'help', type: 'smoothstep' },
+    { id: 'e3-6', source: 'nlp-1', target: 'msg-fallback', sourceHandle: 'fallback', type: 'smoothstep' }
   ],
-  // 添加模板初始化数据
   initData: {
     templates: messageTemplates,
     variables: [
       {
         name: 'customer_name',
         type: 'string',
-        value: '',
-        description: '客户名称'
+        description: '客户姓名'
       },
       {
-        name: 'order_id',
-        type: 'string',
-        value: '',
-        description: '订单编号'
-      },
-      {
-        name: 'order_status',
-        type: 'string',
-        value: '',
-        description: '订单状态'
+        name: 'message_count',
+        type: 'number',
+        description: '消息计数'
       }
     ]
   }
 }
 
-// 客服机器人模板
-export const customerSupportTemplate = {
-  name: 'Customer Support Bot',
-  description: 'Advanced support bot with user input collection',
+// 预约提醒模板
+export const appointmentTemplate = {
+  id: 'appointment',
+  name: 'Appointment Reminders',
+  description: 'Reduce no-shows by sending confirmation messages.',
+  nodes: [
+    baseNodes.trigger,
+    {
+      id: 'set-appointment-vars',
+      type: 'set_variables',
+      position: { x: 250, y: 150 },
+      data: {
+        label: 'Set Appointment Variables',
+        variables: [
+          {
+            name: 'appointment_time',
+            value: '{{appointment.scheduled_time}}',
+            type: 'string'
+          },
+          {
+            name: 'customer_name',
+            value: '{{contact.name}}',
+            type: 'string'
+          }
+        ]
+      }
+    },
+    {
+      id: 'send-reminder',
+      type: 'send_message',
+      position: { x: 250, y: 250 },
+      data: {
+        label: 'Send Reminder',
+        templateId: 'appointment-reminder',
+        queueSettings: { enabled: true, delay: 0 }
+      }
+    },
+    {
+      id: 'wait-reply',
+      type: 'wait_for_reply',
+      position: { x: 250, y: 350 },
+      data: {
+        label: 'Wait for Confirmation',
+        timeout: 3600,
+        timeoutUnit: 'seconds'
+      }
+    },
+    {
+      id: 'split-response',
+      type: 'split',
+      position: { x: 250, y: 450 },
+      data: {
+        label: 'Check Response',
+        conditions: [
+          { variable: 'reply', operator: 'equals', value: 'YES' },
+          { variable: 'reply', operator: 'equals', value: 'NO' }
+        ]
+      }
+    }
+  ],
+  edges: [
+    { id: 'e1-2', source: 'trigger-1', target: 'set-appointment-vars', type: 'smoothstep' },
+    { id: 'e2-3', source: 'set-appointment-vars', target: 'send-reminder', type: 'smoothstep' },
+    { id: 'e3-4', source: 'send-reminder', target: 'wait-reply', type: 'smoothstep' },
+    { id: 'e4-5', source: 'wait-reply', target: 'split-response', type: 'smoothstep' }
+  ],
+  initData: {
+    templates: messageTemplates,
+    variables: [
+      {
+        name: 'appointment_time',
+        type: 'string',
+        description: '预约时间'
+      },
+      {
+        name: 'customer_name',
+        type: 'string',
+        description: '客户姓名'
+      },
+      {
+        name: 'confirmation_status',
+        type: 'string',
+        description: '确认状态'
+      }
+    ]
+  }
+}
+
+// IVR模板
+export const ivrTemplate = {
+  id: 'ivr',
+  name: 'IVR / Phone Tree',
+  description: 'An Interactive Voice Response (IVR) system that precisely routes each caller.',
   nodes: [
     {
       id: 'trigger-1',
       type: 'trigger',
       position: { x: 250, y: 50 },
       data: {
-        label: 'Message Trigger',
-        triggerType: 'incoming_message'
+        label: 'Call Trigger',
+        triggerType: 'incoming_call'
       }
     },
     {
-      id: 'welcome-msg',
-      type: 'send_message',
+      id: 'say-welcome',
+      type: 'say_play',
       position: { x: 250, y: 150 },
       data: {
-        label: 'Welcome Message',
-        message: 'Welcome to customer support! How can I assist you today?'
+        label: 'Play Welcome',
+        type: 'say',
+        message: 'Welcome to our service.',
+        voice: 'alice',
+        language: 'en-US'
       }
     },
     {
-      id: 'intent-classifier',
-      type: 'nlp_intent',
+      id: 'gather-choice',
+      type: 'gather_input',
       position: { x: 250, y: 250 },
       data: {
-        label: 'Classify Support Type',
-        service: 'dialogflow',
-        intents: [
-          { name: 'technical_support', confidence: '0.7' },
-          { name: 'billing_support', confidence: '0.7' },
-          { name: 'general_inquiry', confidence: '0.7' }
+        label: 'Gather Selection',
+        prompt: 'For sales press 1, for support press 2, for billing press 3.',
+        timeout: 5,
+        finishOnKey: '#'
+      }
+    },
+    {
+      id: 'route-call',
+      type: 'split',
+      position: { x: 250, y: 350 },
+      data: {
+        label: 'Route Call',
+        conditions: [
+          { variable: 'digits', operator: 'equals', value: '1' },
+          { variable: 'digits', operator: 'equals', value: '2' },
+          { variable: 'digits', operator: 'equals', value: '3' }
         ]
+      }
+    },
+    {
+      id: 'connect-sales',
+      type: 'connect_call',
+      position: { x: 100, y: 450 },
+      data: {
+        label: 'Connect to Sales',
+        number: '+1234567890',
+        timeout: 30
+      }
+    },
+    {
+      id: 'connect-support',
+      type: 'connect_call',
+      position: { x: 250, y: 450 },
+      data: {
+        label: 'Connect to Support',
+        number: '+1234567891',
+        timeout: 30
+      }
+    },
+    {
+      id: 'connect-billing',
+      type: 'connect_call',
+      position: { x: 400, y: 450 },
+      data: {
+        label: 'Connect to Billing',
+        number: '+1234567892',
+        timeout: 30
       }
     }
   ],
   edges: [
-    {
-      id: 'e1-2',
-      source: 'trigger-1',
-      target: 'welcome-msg',
-      type: 'smoothstep'
-    },
-    {
-      id: 'e2-3',
-      source: 'welcome-msg',
-      target: 'intent-classifier',
-      type: 'smoothstep'
-    }
-  ]
+    { id: 'e1-2', source: 'trigger-1', target: 'say-welcome', type: 'smoothstep' },
+    { id: 'e2-3', source: 'say-welcome', target: 'gather-choice', type: 'smoothstep' },
+    { id: 'e3-4', source: 'gather-choice', target: 'route-call', type: 'smoothstep' },
+    { id: 'e4-5', source: 'route-call', target: 'connect-sales', sourceHandle: '1', type: 'smoothstep' },
+    { id: 'e4-6', source: 'route-call', target: 'connect-support', sourceHandle: '2', type: 'smoothstep' },
+    { id: 'e4-7', source: 'route-call', target: 'connect-billing', sourceHandle: '3', type: 'smoothstep' }
+  ],
+  initData: {
+    variables: [
+      {
+        name: 'caller_id',
+        type: 'string',
+        description: '来电号码'
+      },
+      {
+        name: 'selection',
+        type: 'string',
+        description: '用户选择'
+      },
+      {
+        name: 'queue_time',
+        type: 'number',
+        description: '排队时间'
+      }
+    ]
+  }
 }
 
-export const availableTemplates = [
-  basicChatbotTemplate,
-  customerSupportTemplate
-]
+// 空模板(从头开始)
+export const scratchTemplate = {
+  id: 'scratch',
+  name: 'Start from scratch',
+  description: 'Start building from scratch.',
+  nodes: [
+    baseNodes.trigger
+  ],
+  edges: [],
+  initData: {
+    variables: []
+  }
+}
 
-// 导出消息模板以便其他地方使用
-export const defaultMessageTemplates = messageTemplates
+// 导出所有可用模板
+export const availableTemplates = {
+  scratch: scratchTemplate,
+  appointment: appointmentTemplate,
+  ivr: ivrTemplate,
+  sms: smsTemplate
+}
+
+// 保持原有导出
+export { messageTemplates as defaultMessageTemplates }
