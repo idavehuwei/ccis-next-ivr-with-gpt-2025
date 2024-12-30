@@ -1,16 +1,12 @@
 // src/services/flowExecutor.ts
-import { EventEmitter } from 'events';
-import { 
-  FlowDefinition, 
-  FlowState, 
-  ExecutionContext,
-  ExecutionResult,
-  FlowExecutionError,
-  FlowNotFoundError 
-} from '../types';
-import { FlowStore } from '../store/flowStore';
+import { EventEmitter } from 'eventemitter3';
+ 
 import { getHandler } from '../handlers';
 import { FLOW_CONSTANTS } from '../config/constants';
+
+import { FlowStore } from '@/stores';
+import { FlowNotFoundError, FlowExecutionError } from '@/types/errors';
+import { ExecutionContext, FlowState, ExecutionResult, FlowDefinition } from '@/types/flow';
 
 export interface FlowExecutorEvents {
   'execution:started': (flowId: string, context: ExecutionContext) => void;

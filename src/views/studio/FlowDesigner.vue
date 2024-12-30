@@ -365,9 +365,11 @@ import ConditionBuilder from '@/components/builder/ConditionBuilder.vue'
 import VariableManager from '@/components/manager/VariableManager.vue'
 
 
-import { FlowStore, FlowExecutor } from '@/services'
+import { FlowExecutor } from '@/services'
 import { generateFlowDefinition } from '@/utils/flowUtils'
-import { useFlowStore } from '../../stores/flow''
+
+import { useFlowStore } from '../../stores/flow'
+import { FlowStore } from '../../stores/flow'
 
 
 
@@ -1233,4 +1235,4 @@ const registerNodes = () => {
 }
 
 
-</style>
+</style>../../stores/flow

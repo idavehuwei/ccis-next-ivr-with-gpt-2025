@@ -5,7 +5,7 @@ import { FlowExecutor } from '../services/flowExecutor';
 import { FlowValidator } from '../utils/validation';
 import { CreateFlowRequest, UpdateFlowRequest, ExecuteFlowRequest } from './types';
 import { FlowNotFoundError, FlowValidationError } from '../types/errors';
-import { FlowStore } from '@/stores/flowStore';
+import { FlowStore } from '@/stores/flow';
 
 export class FlowController {
   constructor(

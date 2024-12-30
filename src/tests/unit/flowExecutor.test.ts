@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { FlowExecutor } from '../../services/flowExecutor';
  
 import { sampleFlow } from '../fixtures/sampleFlows';
-import { FlowStore } from '@/stores/flowStore';
+import { FlowStore } from '@/stores/flow';
 
 describe('FlowExecutor', () => {
   let flowStore: FlowStore;

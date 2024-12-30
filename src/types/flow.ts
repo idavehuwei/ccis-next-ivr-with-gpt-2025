@@ -19,6 +19,14 @@ export interface FlowDefinition {
   variables?: FlowVariable[];
 }
 
+export interface FlowMetadata {
+  createdAt: Date;
+  updatedAt: Date;
+  status: 'draft' | 'published';
+  version: number;
+  commitMessage?: string;
+}
+
 export interface FlowState {
   name: string;
   type: StateType;
@@ -68,3 +76,19 @@ export type FlowEvent =
   | 'audioComplete'
   | 'callConnected'
   | 'callDisconnected';
+
+
+
+
+  export interface ExecutionContext {
+    flowId: string;
+    stateData: Record<string, any>;
+    variables: Record<string, any>;
+    messageHistory: any[];
+  }
+  export interface ExecutionResult {
+    event: string;
+    data?: any;
+    error?: Error;
+  }
+  
