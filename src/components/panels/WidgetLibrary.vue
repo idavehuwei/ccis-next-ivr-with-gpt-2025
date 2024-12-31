@@ -211,14 +211,6 @@ const voiceComponents = [
   },
 
   {
-    type: 'wait_for_reply',
-    name: 'Wait For Reply',
-    icon: 'W',
-    iconClass: 'bg-indigo-500',
-    description: 'Wait for user response with timeout'
-  },
-
-  {
     type: 'say_play',
     name: '说/播放',
     icon: 'P',
@@ -254,13 +246,7 @@ const messagingComponents = [
     iconClass: 'bg-red-500'
   },
   {
-    type: 'send_message',
-    name: '发送消息',
-    icon: 'M',
-    iconClass: 'bg-blue-500'
-  },
-  {
-    type: 'send_and_wait',
+    type: 'send_wait_reply',
     name: '发送并等待回复',
     icon: 'W',
     iconClass: 'bg-purple-500',

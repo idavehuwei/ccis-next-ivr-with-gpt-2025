@@ -43,8 +43,6 @@ import EnqueueCallConfig from './widget-configs/EnqueueCallConfig.vue';
 import TriggerConfig from './widget-configs/TriggerConfig.vue';
 import SplitNodeConfig from './widget-configs/SplitNodeConfig.vue';
 
-import SendMessageConfig from './widget-configs/SendMessageConfig.vue' // New
-
 
 const props = defineProps<{
   selectedNode?: IVRNode | null;
@@ -68,9 +66,6 @@ const getConfigComponent = (type?: string) => {
   switch(type) {
     case 'trigger':
       return TriggerConfig;
-
-      case 'send_message':
-      return SendMessageConfig // New
 
     case 'set_variables':
       return SetVariablesConfig;

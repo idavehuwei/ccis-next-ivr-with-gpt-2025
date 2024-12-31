@@ -136,7 +136,6 @@
           </template>
 
 
-
           <template #node-say_play="props">
             <SayPlayNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
           </template>
@@ -148,10 +147,6 @@
             <SplitOnIntentNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
           </template>
 
-          <template #node-send_message="props">
-            <SendMessageNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
-          </template>
-
           <template #node-enqueue_call="props">
             <EnqueueCallNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
           </template>
@@ -160,8 +155,8 @@
             <CollectInputNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
           </template>
 
-          <template #node-send_and_wait="props">
-            <SendAndWaitNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
+          <template #node-send_wait_reply="props">
+            <SendWaitReplyNode v-bind="props" :is-selected="selectedNode?.id === props.id" />
           </template>
 
           <template #node-wait_for_reply="props">
@@ -370,7 +365,7 @@ import { FlowStore } from '../../stores/flow'
 // 节点组件导入
 import FloatingToolbar from '@/components/FloatingToolbar.vue'
 import TriggerNode from '@/components/nodes/TriggerNode.vue'
-import SendAndReplyNode from '@/components/nodes/SendAndReplyNode.vue'
+import SendWaitReplyNode from '@/components/nodes/SendWaitReplyNode.vue'
 import GatherInputNode from '@/components/nodes/GatherInputNode.vue'
 import ConnectCallNode from '@/components/nodes/ConnectCallNode.vue'
 import OutgoingCallNode from '@/components/nodes/OutgoingCallNode.vue'
@@ -382,10 +377,7 @@ import HttpRequestNode from '@/components/nodes/HttpRequestNode.vue'
 import RunFunctionNode from '@/components/nodes/RunFunctionNode.vue'
 import ConnectVirtualAgentNode from '@/components/nodes/ConnectVirtualAgentNode.vue'
 
- 
-import SendMessageNode from '@/components/nodes/SendMessageNode.vue'
 import CollectInputNode from '@/components/nodes/CollectInputNode.vue'
-import SendAndWaitNode from '@/components/nodes/SendAndWaitNode.vue'
 import SplitOnIntentNode from '@/components/nodes/SplitOnIntentNode.vue'
 import EnqueueCallNode from '@/components/nodes/EnqueueCallNode.vue'
 import WaitForReplyNode from '@/components/nodes/WaitForReplyNode.vue'

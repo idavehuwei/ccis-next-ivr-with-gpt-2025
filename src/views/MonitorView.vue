@@ -13,14 +13,12 @@
   import TriggerNode from '@/components/nodes/TriggerNode.vue';
   import SetVariablesNode from '@/components/nodes/SetVariablesNode.vue';
   import NLPIntentNode from '@/components/nodes/NLPIntentNode.vue';
-  import SendMessageNode from '@/components/nodes/SendMessageNode.vue';
-  
+ 
   // Mark components as raw to avoid reactivity overhead
   const nodeTypes = markRaw({
     trigger: TriggerNode,
     set_variables: SetVariablesNode,
-    nlp_intent: NLPIntentNode,
-    send_message: SendMessageNode,
+    nlp_intent: NLPIntentNode, 
   });
   
   const nodes = shallowRef([
