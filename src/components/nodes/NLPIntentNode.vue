@@ -12,7 +12,6 @@
 
     <template #default>
       <div class="p-4 space-y-4">
-        <!-- NLP Service -->
         <div>
           <label class="block text-xs font-medium text-gray-500">NLP SERVICE</label>
           <select
@@ -23,10 +22,10 @@
             <option value="dialogflow">Dialogflow</option>
             <option value="luis">LUIS</option>
             <option value="lex">Amazon Lex</option>
+            <option value="watson">Watson</option> <!-- 新增Watson支持 -->
           </select>
         </div>
 
-        <!-- Intent Mapping -->
         <div>
           <div class="flex justify-between items-center">
             <label class="text-xs font-medium text-gray-500">INTENTS</label>
@@ -66,7 +65,6 @@
     </template>
 
     <template #handles>
-      <!-- Dynamic handle for each intent -->
       <div v-for="intent in nodeData.intents" :key="intent.name">
         <Handle
           type="source"
@@ -77,7 +75,6 @@
           <span class="handle-label">{{ intent.name }}</span>
         </Handle>
       </div>
-      <!-- Fallback handle -->
       <Handle
         type="source"
         :position="Position.Bottom"

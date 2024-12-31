@@ -12,7 +12,6 @@
 
     <template #default>
       <div class="p-4 space-y-4">
-        <!-- Variables -->
         <div>
           <div class="flex justify-between items-center">
             <label class="text-xs font-medium text-gray-500">VARIABLES</label>
@@ -41,6 +40,8 @@
                   <option value="string">String</option>
                   <option value="number">Number</option>
                   <option value="boolean">Boolean</option>
+                  <option value="array">Array</option>
+                  <option value="object">Object</option>
                 </select>
                 <div class="flex gap-2">
                   <input
@@ -54,6 +55,14 @@
                   </button>
                 </div>
               </div>
+              <textarea
+                v-if="variable.type === 'array' || variable.type === 'object'"
+                v-model="variable.value"
+                rows="3"
+                class="w-full px-3 py-2 border rounded text-sm font-mono"
+                placeholder="Enter JSON value"
+                @change="updateNode"
+              ></textarea>
             </div>
           </div>
         </div>

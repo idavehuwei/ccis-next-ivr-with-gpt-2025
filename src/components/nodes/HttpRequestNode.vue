@@ -12,7 +12,6 @@
 
     <template #default>
       <div class="p-4 space-y-4">
-        <!-- HTTP Method & URL -->
         <div class="grid grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-medium text-gray-500">METHOD</label>
@@ -25,6 +24,7 @@
               <option value="POST">POST</option>
               <option value="PUT">PUT</option>
               <option value="DELETE">DELETE</option>
+              <option value="PATCH">PATCH</option> <!-- 新增PATCH支持 -->
             </select>
           </div>
           <div class="col-span-2">
@@ -39,7 +39,6 @@
           </div>
         </div>
 
-        <!-- Headers -->
         <div>
           <div class="flex justify-between items-center mb-2">
             <label class="text-xs font-medium text-gray-500">HEADERS</label>
@@ -77,7 +76,6 @@
           </div>
         </div>
 
-        <!-- Request Body -->
         <div>
           <label class="block text-xs font-medium text-gray-500">BODY</label>
           <div class="space-y-2">
@@ -126,7 +124,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
-import { Globe as GlobeIcon, X as XIcon } from 'lucide-vue-next' 
+import { Globe as GlobeIcon, X as XIcon } from 'lucide-vue-next'
 import BaseNode from './BaseNode.vue'
 
 const props = defineProps<{
