@@ -12,21 +12,7 @@
           </svg>
           {{ flowName }}
         </router-link>
-      </div>
-
-      <div class="flex items-center space-x-3">
-        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">
-          {{ changesCount }} Changes to Flow
-        </span>
-        <button class="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded" @click="handlePublish">
-          Publish
-        </button>
-
-        <button class="px-4 py-2 bg-white border rounded shadow-sm hover:bg-gray-50" @click="showTemplateLoader = true">
-          Load Template
-        </button>
-      </div>
-
+      </div> 
 
       <div class="flex items-center space-x-3">
         <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">
@@ -1221,4 +1207,4 @@ const registerNodes = () => {
 }
 
 
-</style>../../stores/flow
+</style> 
