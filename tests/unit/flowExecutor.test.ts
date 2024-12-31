@@ -1,7 +1,7 @@
 // src/tests/unit/flowExecutor.test.ts
 import { ExecutionContext } from '@/types/flow';
 import { describe, it } from 'node:test';
-import { FlowExecutor } from '../services/flowExecutor';
+import { FlowExecutor } from '../../src/services/flowExecutor';
  
 import { sampleFlow } from './sampleFlows';
 import { FlowStore } from '@/stores/flow';

@@ -22,7 +22,7 @@
             <option value="dialogflow">Dialogflow</option>
             <option value="luis">LUIS</option>
             <option value="lex">Amazon Lex</option>
-            <option value="watson">Watson</option> <!-- 新增Watson支持 -->
+            <option value="watson">Watson</option>
           </select>
         </div>
 
@@ -61,6 +61,13 @@
             </div>
           </div>
         </div>
+
+        <!-- Mock Parsing Button -->
+        <div>
+          <button @click="mockParseIntent" class="text-blue-500">
+            Mock Parse Intent
+          </button>
+        </div>
       </div>
     </template>
 
@@ -92,23 +99,29 @@ import { ref } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import { Brain as BrainIcon, X as XIcon } from 'lucide-vue-next'
 import BaseNode from './BaseNode.vue'
+import { useBotEngineStore } from '../../stores/botEngine'
+
+// 定义组件的props类型
+interface Intent {
+  name: string
+  confidence: number
+}
+
+interface NodeData {
+  label?: string
+  service?: string
+  intents: Intent[]
+}
 
 const props = defineProps<{
   id: string
-  data: {
-    label?: string
-    service?: string
-    intents: Array<{
-      name: string
-      confidence: number
-    }>
-  }
+  data: NodeData
   isSelected?: boolean
 }>()
 
 const emit = defineEmits(['update'])
 
-const nodeData = ref({
+const nodeData = ref<NodeData>({
   label: props.data.label || 'NLP Intent',
   service: props.data.service || 'dialogflow',
   intents: props.data.intents || []
@@ -116,6 +129,8 @@ const nodeData = ref({
 
 const isExecuting = ref(false)
 const hasError = ref(false)
+
+const botEngineStore = useBotEngineStore()
 
 const addIntent = () => {
   nodeData.value.intents.push({
@@ -135,5 +150,26 @@ const updateNode = () => {
     ...props.data,
     ...nodeData.value
   })
+  botEngineStore.updateNode({
+    label: props.id,
+    ...nodeData.value
+  })
+}
+
+// Mock Parsing Logic
+const mockParseIntent = () => {
+  const mockResponse = {
+    intent: 'greeting',
+    confidence: 0.95
+  }
+  updateNodeDataWithMockResponse(mockResponse)
+}
+
+const updateNodeDataWithMockResponse = (response: { intent: string, confidence: number }) => {
+  nodeData.value.intents.push({
+    name: response.intent,
+    confidence: response.confidence
+  })
+  updateNode()
 }
 </script>
